@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/Bendomey/nucleo-go/nucleo"
+	"github.com/Bendomey/nucleo-go/nucleo/serializer/jsonSerializer"
 )
 
 type Serializer interface {
@@ -17,6 +18,6 @@ type Serializer interface {
 	MapToPayload(*map[string]interface{}) (nucleo.Payload, error)
 }
 
-// func New(broker *nucleo.BrokerDelegates) Serializer {
-// 	return CreateJSONSerializer(broker.Logger("serializer", "json"))
-// }
+func New(broker *nucleo.BrokerDelegates) Serializer {
+	return jsonSerializer.CreateJSONSerializer(broker.Logger("serializer", "json"))
+}

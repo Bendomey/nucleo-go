@@ -112,6 +112,16 @@ func (t *NatsTransporter) SetPrefix(prefix string) {
 	t.prefix = prefix
 }
 
+// SetNodeID - Sets the nodeid
+func (t *NatsTransporter) SetNodeID(nodeID string) {
+	// TODO: introduce nodeId
+}
+
+// SetSerializer - Sets the serializer type. Defaults to JSONSerializer
+func (t *NatsTransporter) SetSerializer(serializer serializer.Serializer) {
+	// TODO: set serializer here
+}
+
 // Topic - Resolve topic name by append command to the node's id.
 func (t *NatsTransporter) topicName(command string, nodeID string) string {
 	parts := []string{t.prefix, command}
