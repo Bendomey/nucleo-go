@@ -322,7 +322,7 @@ func (transit *Transit) subscribe() {
 func (transit *Transit) sendDisconnect() {
 	payload := make(map[string]interface{})
 	payload["sender"] = transit.broker.LocalNode().GetID()
-	// payload["ver"] = version.NucleoProtocol()
+	payload["version"] = 1
 	msg, _ := transit.serializer.MapToPayload(&payload)
 	transit.transport.Publish("DISCONNECT", "", msg)
 }
