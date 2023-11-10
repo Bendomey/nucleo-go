@@ -52,6 +52,10 @@ func createStrategy(broker *nucleo.BrokerDelegates) strategy.Strategy {
 		return broker.Config.StrategyFactory().(strategy.Strategy)
 	}
 
+	if broker.Config.Strategy == nucleo.StrategyRoundRobin {
+		return &strategy.RoundRobinStrategy{}
+	}
+
 	return strategy.RandomStrategy{}
 }
 

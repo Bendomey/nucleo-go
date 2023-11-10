@@ -133,12 +133,27 @@ const (
 	LogFormatText LogFormatType = "TEXT"
 )
 
+type StrategyType string
+
+const (
+	StrategyRoundRobin StrategyType = "RoundRobin"
+	StrategyRandom     StrategyType = "Random"
+)
+
+type SerializerType string
+
+const (
+	SerializerJSON SerializerType = "JSON"
+)
+
 type Config struct {
 	LogLevel                   LogLevelType
 	LogFormat                  LogFormatType
+	Serializer                 SerializerType
 	DiscoverNodeID             func() string
 	Transporter                string
 	TransporterFactory         TransporterFactoryFunc
+	Strategy                   StrategyType
 	StrategyFactory            StrategyFactoryFunc
 	HeartbeatFrequency         time.Duration
 	HeartbeatTimeout           time.Duration
@@ -178,8 +193,10 @@ var DefaultConfig = Config{
 	Namespace:                  "nucleo-example-ns",
 	LogLevel:                   LogLevelInfo,
 	LogFormat:                  LogFormatText,
+	Serializer:                 SerializerJSON,
 	DiscoverNodeID:             discoverNodeID,
 	Transporter:                "MEMORY",
+	Strategy:                   StrategyRandom,
 	HeartbeatFrequency:         5 * time.Second,
 	HeartbeatTimeout:           15 * time.Second,
 	OfflineCheckFrequency:      20 * time.Second,
