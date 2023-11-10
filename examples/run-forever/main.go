@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/Bendomey/nucleo-go/nucleo"
 	"github.com/Bendomey/nucleo-go/nucleo/broker"
@@ -26,8 +29,7 @@ var Calculator = nucleo.ServiceSchema{
 func main() {
 	nucleoBroker := broker.New(&nucleo.Config{
 		Namespace: "basic-example",
-		LogFormat: nucleo.LogFormatJSON,
-		LogLevel:  nucleo.LogLevelDebug,
+		LogLevel:  nucleo.LogLevelInfo,
 	})
 
 	// list all services here
@@ -39,7 +41,11 @@ func main() {
 		"b": 2,
 	})
 
+	signalC := make(chan os.Signal)
+	signal.Notify(signalC, os.Interrupt, syscall.SIGTERM)
+
 	fmt.Print("additionResult", additionResult)
+	<-signalC
 
 	nucleoBroker.Stop()
 }

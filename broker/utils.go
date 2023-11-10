@@ -1,8 +1,6 @@
 package broker
 
-import (
-	"github.com/Bendomey/nucleo-go/nucleo"
-)
+import "github.com/Bendomey/nucleo-go/nucleo"
 
 func mergeMaps(base, new map[string]interface{}) map[string]interface{} {
 	if base == nil {
@@ -14,27 +12,60 @@ func mergeMaps(base, new map[string]interface{}) map[string]interface{} {
 	return base
 }
 
-func mergeConfigs(baseConfig nucleo.Config, userConfig nucleo.Config) nucleo.Config {
-	if userConfig.Services != nil {
-		baseConfig.Services = mergeMaps(baseConfig.Services, userConfig.Services)
-	}
+func mergeConfigs(baseConfig nucleo.Config, userConfig []*nucleo.Config) nucleo.Config {
+	if len(userConfig) > 0 {
+		for _, config := range userConfig {
+			if config.Services != nil {
+				baseConfig.Services = mergeMaps(baseConfig.Services, config.Services)
+			}
 
-	if userConfig.LogLevel != "" {
-		baseConfig.LogLevel = userConfig.LogLevel
-	}
-	if userConfig.LogFormat != "" {
-		baseConfig.LogFormat = userConfig.LogFormat
-	}
-	if userConfig.DiscoverNodeID != nil {
-		baseConfig.DiscoverNodeID = userConfig.DiscoverNodeID
-	}
+			if config.LogLevel != "" {
+				baseConfig.LogLevel = config.LogLevel
+			}
+			if config.LogFormat != "" {
+				baseConfig.LogFormat = config.LogFormat
+			}
+			if config.DiscoverNodeID != nil {
+				baseConfig.DiscoverNodeID = config.DiscoverNodeID
+			}
+			if config.Transporter != "" {
+				baseConfig.Transporter = config.Transporter
+			}
+			if config.TransporterFactory != nil {
+				baseConfig.TransporterFactory = config.TransporterFactory
+			}
+			if config.StrategyFactory != nil {
+				baseConfig.StrategyFactory = config.StrategyFactory
+			}
+			if config.DisableInternalMiddlewares {
+				baseConfig.DisableInternalMiddlewares = config.DisableInternalMiddlewares
+			}
+			if config.DisableInternalServices {
+				baseConfig.DisableInternalServices = config.DisableInternalServices
+			}
+			if config.Metrics {
+				baseConfig.Metrics = config.Metrics
+			}
 
-	if userConfig.RequestTimeout != 0 {
-		baseConfig.RequestTimeout = userConfig.RequestTimeout
-	}
+			if config.MetricsRate > 0 {
+				baseConfig.MetricsRate = config.MetricsRate
+			}
 
-	if userConfig.Namespace != "" {
-		baseConfig.Namespace = userConfig.Namespace
+			if config.DontWaitForNeighbours {
+				baseConfig.DontWaitForNeighbours = config.DontWaitForNeighbours
+			}
+
+			if config.Middlewares != nil {
+				baseConfig.Middlewares = config.Middlewares
+			}
+			if config.RequestTimeout != 0 {
+				baseConfig.RequestTimeout = config.RequestTimeout
+			}
+
+			if config.Namespace != "" {
+				baseConfig.Namespace = config.Namespace
+			}
+		}
 	}
 	return baseConfig
 }

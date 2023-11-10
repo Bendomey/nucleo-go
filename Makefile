@@ -4,3 +4,6 @@
 # Example: chmod u+x scripts/run-basic-example.sh
 run-basic-example:
 	time go run examples/basic/main.go
+
+run-forever-example:
+	time go run examples/run-forever/main.go
