@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
-	"github.com/Bendomey/nucleo-go/nucleo/serializer"
-	"github.com/Bendomey/nucleo-go/nucleo/transit"
-	"github.com/Bendomey/nucleo-go/nucleo/utils"
+	"github.com/Bendomey/nucleo-go"
+	"github.com/Bendomey/nucleo-go/serializer"
+	"github.com/Bendomey/nucleo-go/transit"
+	"github.com/Bendomey/nucleo-go/utils"
 	log "github.com/sirupsen/logrus"
 )
 

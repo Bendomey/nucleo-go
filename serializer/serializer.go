@@ -3,7 +3,7 @@ package serializer
 import (
 	"io"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
+	"github.com/Bendomey/nucleo-go"
 )
 
 type Serializer interface {

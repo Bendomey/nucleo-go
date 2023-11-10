@@ -1,8 +1,8 @@
 package transit
 
 import (
-	"github.com/Bendomey/nucleo-go/nucleo"
-	"github.com/Bendomey/nucleo-go/nucleo/serializer"
+	"github.com/Bendomey/nucleo-go"
+	"github.com/Bendomey/nucleo-go/serializer"
 )
 
 type TransportHandler func(nucleo.Payload)

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
-	"github.com/Bendomey/nucleo-go/nucleo/context"
-	"github.com/Bendomey/nucleo-go/nucleo/middleware"
+	"github.com/Bendomey/nucleo-go"
+	"github.com/Bendomey/nucleo-go/context"
+	"github.com/Bendomey/nucleo-go/middleware"
 )
 
 func metricEnd(brokerContext nucleo.BrokerContext, result nucleo.Payload) {

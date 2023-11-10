@@ -1,6 +1,6 @@
 package broker
 
-import "github.com/Bendomey/nucleo-go/nucleo"
+import "github.com/Bendomey/nucleo-go"
 
 func mergeMaps(base, new map[string]interface{}) map[string]interface{} {
 	if base == nil {

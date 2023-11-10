@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
-	"github.com/Bendomey/nucleo-go/nucleo/broker"
+	"github.com/Bendomey/nucleo-go"
+	"github.com/Bendomey/nucleo-go/broker"
 )
 
 var Calculator = nucleo.ServiceSchema{

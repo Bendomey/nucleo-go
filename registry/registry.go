@@ -8,13 +8,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
-	"github.com/Bendomey/nucleo-go/nucleo/middleware"
-	"github.com/Bendomey/nucleo-go/nucleo/payload"
-	"github.com/Bendomey/nucleo-go/nucleo/service"
-	"github.com/Bendomey/nucleo-go/nucleo/strategy"
-	"github.com/Bendomey/nucleo-go/nucleo/transit"
-	"github.com/Bendomey/nucleo-go/nucleo/transit/pubsub"
+	"github.com/Bendomey/nucleo-go"
+	"github.com/Bendomey/nucleo-go/middleware"
+	"github.com/Bendomey/nucleo-go/payload"
+	"github.com/Bendomey/nucleo-go/service"
+	"github.com/Bendomey/nucleo-go/strategy"
+	"github.com/Bendomey/nucleo-go/transit"
+	"github.com/Bendomey/nucleo-go/transit/pubsub"
 	log "github.com/sirupsen/logrus"
 )
 

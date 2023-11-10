@@ -11,7 +11,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
+	"github.com/Bendomey/nucleo-go"
 )
 
 // RawPayload is a payload implementation for raw types.

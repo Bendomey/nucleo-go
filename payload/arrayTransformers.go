@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
+	"github.com/Bendomey/nucleo-go"
 )
 
 type interfaceArrayFunc func(source *interface{}) []interface{}

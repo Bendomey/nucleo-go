@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
+	"github.com/Bendomey/nucleo-go"
 	log "github.com/sirupsen/logrus"
 )
 

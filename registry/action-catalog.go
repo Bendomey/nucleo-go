@@ -6,10 +6,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
-	"github.com/Bendomey/nucleo-go/nucleo/payload"
-	"github.com/Bendomey/nucleo-go/nucleo/service"
-	"github.com/Bendomey/nucleo-go/nucleo/strategy"
+	"github.com/Bendomey/nucleo-go"
+	"github.com/Bendomey/nucleo-go/payload"
+	"github.com/Bendomey/nucleo-go/service"
+	"github.com/Bendomey/nucleo-go/strategy"
 	log "github.com/sirupsen/logrus"
 )
 

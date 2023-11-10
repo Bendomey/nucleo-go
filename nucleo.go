@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	bus "github.com/Bendomey/nucleo-go/nucleo/emitter"
-	"github.com/Bendomey/nucleo-go/nucleo/utils"
+	bus "github.com/Bendomey/nucleo-go/emitter"
+	"github.com/Bendomey/nucleo-go/utils"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 )

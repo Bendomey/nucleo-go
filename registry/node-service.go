@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
-	"github.com/Bendomey/nucleo-go/nucleo/service"
+	"github.com/Bendomey/nucleo-go"
+	"github.com/Bendomey/nucleo-go/service"
 )
 
 // createNodeService create the local node service -> $node.

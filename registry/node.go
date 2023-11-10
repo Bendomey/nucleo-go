@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
-	"github.com/Bendomey/nucleo-go/nucleo/version"
+	"github.com/Bendomey/nucleo-go"
+	"github.com/Bendomey/nucleo-go/version"
 	log "github.com/sirupsen/logrus"
 )
 

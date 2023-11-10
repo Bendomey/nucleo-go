@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
-	"github.com/Bendomey/nucleo-go/nucleo/payload"
-	"github.com/Bendomey/nucleo-go/nucleo/utils"
+	"github.com/Bendomey/nucleo-go"
+	"github.com/Bendomey/nucleo-go/payload"
+	"github.com/Bendomey/nucleo-go/utils"
 	log "github.com/sirupsen/logrus"
 )
 

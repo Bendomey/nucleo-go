@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Bendomey/nucleo-go/nucleo/service"
+	"github.com/Bendomey/nucleo-go/service"
 	log "github.com/sirupsen/logrus"
 )
 

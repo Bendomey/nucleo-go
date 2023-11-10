@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/Bendomey/nucleo-go/nucleo"
-	"github.com/Bendomey/nucleo-go/nucleo/payload"
+	"github.com/Bendomey/nucleo-go"
+	"github.com/Bendomey/nucleo-go/payload"
 	log "github.com/sirupsen/logrus"
 )
 

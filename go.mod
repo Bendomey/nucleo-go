@@ -1,4 +1,4 @@
-module github.com/Bendomey/nucleo-go/nucleo
+module github.com/Bendomey/nucleo-go
 
 go 1.19
 
