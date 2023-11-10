@@ -90,12 +90,28 @@ type isStartedFunc func() bool
 type InstanceIDFunc func() string
 type BrokerContextFunc func() BrokerContext
 type PublishServicesFunc func(...interface{})
-
+type LocalNodeFunc func() Node
 type BrokerDelegates struct {
 	InstanceID      InstanceIDFunc
+	LocalNode       LocalNodeFunc
 	Logger          LoggerFunc
 	IsStarted       isStartedFunc
 	Config          Config
 	BrokerContext   BrokerContextFunc
 	PublishServices PublishServicesFunc
+}
+
+type Node interface {
+	GetID() string
+
+	ExportAsMap() map[string]interface{}
+	IsAvailable() bool
+	Available()
+	Unavailable()
+	IsExpired(timeout time.Duration) bool
+	Update(id string, info map[string]interface{}) bool
+
+	IncreaseSequence()
+	HeartBeat(heartbeat map[string]interface{})
+	Publish(service map[string]interface{})
 }

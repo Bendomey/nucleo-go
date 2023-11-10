@@ -9,6 +9,7 @@ func main() {
 	nucleoBroker := broker.New(nucleo.Config{
 		Namespace: "basic-example",
 		LogFormat: nucleo.LogFormatJSON,
+		LogLevel:  nucleo.LogLevelDebug,
 	})
 
 	// list all services here

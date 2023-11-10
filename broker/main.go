@@ -5,6 +5,7 @@ import (
 
 	"github.com/Bendomey/nucleo-go/nucleo"
 	"github.com/Bendomey/nucleo-go/nucleo/context"
+	"github.com/Bendomey/nucleo-go/nucleo/registry"
 	"github.com/hashicorp/go-uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,6 +24,9 @@ type ServiceBroker struct {
 
 	instanceID string
 	id         string
+
+	localNode nucleo.Node
+	registry  *registry.ServiceRegistry
 
 	services map[string]interface{}
 }
@@ -45,7 +49,10 @@ func (broker *ServiceBroker) init() {
 
 	broker.instanceID = broker.generateUUID()
 
-	broker.rootContext = context.BrokerContext(broker.brokerDelegates())
+	brokerDeletegates := broker.brokerDelegates()
+	broker.registry = registry.CreateRegistry(broker.id, brokerDeletegates)
+	broker.localNode = broker.registry.LocalNode()
+	broker.rootContext = context.BrokerContext(brokerDeletegates)
 }
 
 func (broker *ServiceBroker) IsStarted() bool {
@@ -56,8 +63,13 @@ func (broker *ServiceBroker) newLogger(name string, value string) *log.Entry {
 	return broker.logger.WithField(name, value)
 }
 
+func (broker *ServiceBroker) LocalNode() nucleo.Node {
+	return broker.localNode
+}
+
 func (broker *ServiceBroker) brokerDelegates() *nucleo.BrokerDelegates {
 	return &nucleo.BrokerDelegates{
+		LocalNode: broker.LocalNode,
 		Logger:    broker.newLogger,
 		IsStarted: broker.IsStarted,
 		Config:    broker.config,
@@ -80,10 +92,10 @@ func (broker *ServiceBroker) Start() {
 	broker.starting = true
 	startingAtNow := time.Now()
 	broker.startingAt = &startingAtNow
-	broker.logger.Info("Moleculer is starting...")
-	// broker.logger.Info("Node ID: ", broker.localNode.GetID())
+	broker.logger.Info("Nucleo is starting...")
+	broker.logger.Info("Node ID: ", broker.localNode.GetID())
 
-	//TODO: start registry here.
+	broker.registry.Start()
 
 	//TODO: start services here.
 
@@ -105,7 +117,7 @@ func (broker *ServiceBroker) Stop() {
 	broker.logger.Info("Service Broker is stopping...")
 
 	//TODO: stop services here.
-	//TODO: stop registry here.
+	broker.registry.Stop()
 
 	broker.started = false
 	broker.startedAt = nil
