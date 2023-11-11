@@ -84,7 +84,7 @@ func (serviceCatalog *ServiceCatalog) listByName() map[string][]ServiceEntry {
 // RemoveByNode remove services for the given nodeID.
 func (serviceCatalog *ServiceCatalog) RemoveByNode(nodeID string) []*service.Service {
 	var removed []*service.Service
-	serviceCatalog.logger.Debug("RemoveByNode() nodeID: ", nodeID)
+	serviceCatalog.logger.Debugln("RemoveByNode() nodeID: ", nodeID)
 	var keysRemove []string
 	var namesRemove []string
 	var fullNamesRemove []string

@@ -228,7 +228,7 @@ func cleanUpForSerialization(values *map[string]interface{}) *map[string]interfa
 func (serializer JSONSerializer) arrayToJsonPayload(list []interface{}) (JSONPayload, error) {
 	json, err := sjson.Set("{root:false}", "root", list)
 	if err != nil {
-		serializer.logger.Error("arrayToJsonPayload() Error when parsing the map: ", list, " Error: ", err)
+		serializer.logger.Errorln("arrayToJsonPayload() Error when parsing the map: ", list, " Error: ", err)
 		return JSONPayload{}, err
 	}
 	return JSONPayload{gjson.Get(json, "root"), serializer.logger}, nil
@@ -238,7 +238,7 @@ func (serializer JSONSerializer) mapToJsonPayload(mapValue *map[string]interface
 	mapValue = cleanUpForSerialization(mapValue)
 	json, err := sjson.Set("{root:false}", "root", mapValue)
 	if err != nil {
-		serializer.logger.Error("mapToJsonPayload() Error when parsing the map: ", mapValue, " Error: ", err)
+		serializer.logger.Errorln("mapToJsonPayload() Error when parsing the map: ", mapValue, " Error: ", err)
 		return JSONPayload{}, err
 	}
 	return JSONPayload{gjson.Get(json, "root"), serializer.logger}, nil
@@ -622,7 +622,7 @@ func (jp JSONPayload) String() string {
 func (payload JSONPayload) RawMap() map[string]interface{} {
 	mapValue, ok := payload.result.Value().(map[string]interface{})
 	if !ok {
-		payload.logger.Warn("RawMap() Could not convert result.Value() into a map[string]interface{} - result: ", payload.result)
+		payload.logger.Warnln("RawMap() Could not convert result.Value() into a map[string]interface{} - result: ", payload.result)
 		return nil
 	}
 	return mapValue

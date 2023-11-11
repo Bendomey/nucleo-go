@@ -35,17 +35,17 @@ func (eventEntry *EventEntry) String() string {
 
 func catchEventError(context nucleo.BrokerContext, logger *log.Entry) {
 	if err := recover(); err != nil {
-		logger.Error("Event handler failed :( event: ", context.EventName(), " error: ", err, "\n[Stack Trace]: ", string(debug.Stack()))
+		logger.Errorln("Event handler failed :( event: ", context.EventName(), " error: ", err, "\n[Stack Trace]: ", string(debug.Stack()))
 	}
 }
 
 func (eventEntry *EventEntry) emitLocalEvent(context nucleo.BrokerContext) {
 	logger := context.Logger().WithField("eventCatalog", "emitLocalEvent")
-	logger.Debug("Invoking local event: ", context.EventName())
+	logger.Debugln("Invoking local event: ", context.EventName())
 	defer catchEventError(context, logger)
 	handler := eventEntry.event.Handler()
 	handler(context.(nucleo.Context), context.Payload())
-	logger.Trace("After invoking local event: ", context.EventName())
+	logger.Traceln("After invoking local event: ", context.EventName())
 }
 
 type EventCatalog struct {
@@ -62,7 +62,7 @@ func CreateEventCatalog(logger *log.Entry) *EventCatalog {
 func (eventCatalog *EventCatalog) Add(event service.Event, service *service.Service, local bool) {
 	entry := EventEntry{service.NodeID(), service, &event, local}
 	name := event.Name()
-	eventCatalog.logger.Debug("Add event name: ", name, " serviceName: ", event.ServiceName())
+	eventCatalog.logger.Debugln("Add event name: ", name, " serviceName: ", event.ServiceName())
 	list, exists := eventCatalog.events.Load(name)
 	if !exists {
 		list = []EventEntry{entry}
@@ -148,7 +148,7 @@ func (eventCatalog *EventCatalog) Find(name string, groups []string, preferLocal
 	if !exists {
 		return make([]*EventEntry, 0)
 	}
-	eventCatalog.logger.Trace("event: ", name, " started: ", events)
+	eventCatalog.logger.Traceln("event: ", name, " started: ", events)
 
 	entryGroups := make(map[string][]EventEntry)
 	for _, entry := range events.([]EventEntry) {
@@ -162,19 +162,19 @@ func (eventCatalog *EventCatalog) Find(name string, groups []string, preferLocal
 	var result []*EventEntry
 	for _, entries := range entryGroups {
 		if local := findLocal(entries); preferLocal && local != nil {
-			eventCatalog.logger.Trace("event: ", name, " found local: ", local)
+			eventCatalog.logger.Traceln("event: ", name, " found local: ", local)
 			result = append(result, local)
 		} else if len(entries) == 1 {
-			eventCatalog.logger.Debug("event: ", name, " found a single one :)  ", entries[0])
+			eventCatalog.logger.Debugln("event: ", name, " found a single one :)  ", entries[0])
 			result = append(result, &entries[0])
 		} else if len(entries) > 1 {
 			if stg == nil {
-				eventCatalog.logger.Debug("event: ", name, " no strategy. return all entries: ", entries)
+				eventCatalog.logger.Debugln("event: ", name, " no strategy. return all entries: ", entries)
 				for _, entry := range entries {
 					result = append(result, &entry)
 				}
 			} else {
-				eventCatalog.logger.Debug("event: ", name, "using strategy to load balance between options: ", entries)
+				eventCatalog.logger.Debugln("event: ", name, "using strategy to load balance between options: ", entries)
 				nodes := make([]strategy.Selector, len(entries))
 				for index, entry := range entries {
 					nodes[index] = &entry

@@ -53,18 +53,18 @@ func (transporter *MemoryTransporter) SetSerializer(serializer serializer.Serial
 }
 
 func (transporter *MemoryTransporter) Connect() chan error {
-	transporter.logger.Debug("[Mem-Trans-", transporter.instanceID, "] -> Connecting() ...")
+	transporter.logger.Debugln("[Mem-Trans-", transporter.instanceID, "] -> Connecting() ...")
 	endChan := make(chan error)
 	go func() {
 		endChan <- nil
 	}()
-	transporter.logger.Info("[Mem-Trans-", transporter.instanceID, "] -> Connected() !")
+	transporter.logger.Infoln("[Mem-Trans-", transporter.instanceID, "] -> Connected() !")
 	return endChan
 }
 
 func (transporter *MemoryTransporter) Disconnect() chan error {
 	endChan := make(chan error)
-	transporter.logger.Debug("[Mem-Trans-", transporter.instanceID, "] -> Disconnecting() ...")
+	transporter.logger.Debugln("[Mem-Trans-", transporter.instanceID, "] -> Disconnecting() ...")
 
 	newHandlers := map[string][]Subscription{}
 	for key, subscriptions := range transporter.memory.handlers {
@@ -81,7 +81,7 @@ func (transporter *MemoryTransporter) Disconnect() chan error {
 	go func() {
 		endChan <- nil
 	}()
-	transporter.logger.Info("[Mem-Trans-", transporter.instanceID, "] -> Disconnected() !")
+	transporter.logger.Infoln("[Mem-Trans-", transporter.instanceID, "] -> Disconnected() !")
 	return endChan
 }
 
@@ -94,7 +94,7 @@ func topicName(transporter *MemoryTransporter, command string, nodeID string) st
 
 func (transporter *MemoryTransporter) Subscribe(command string, nodeID string, handler transit.TransportHandler) {
 	topic := topicName(transporter, command, nodeID)
-	transporter.logger.Trace("[Mem-Trans-", transporter.instanceID, "] Subscribe() listen for command: ", command, " nodeID: ", nodeID, " topic: ", topic)
+	transporter.logger.Traceln("[Mem-Trans-", transporter.instanceID, "] Subscribe() listen for command: ", command, " nodeID: ", nodeID, " topic: ", topic)
 
 	subscription := Subscription{utils.RandomString(5) + "_" + command, transporter.instanceID, handler, true}
 
@@ -110,7 +110,7 @@ func (transporter *MemoryTransporter) Subscribe(command string, nodeID string, h
 
 func (transporter *MemoryTransporter) Publish(command, nodeID string, message nucleo.Payload) {
 	topic := topicName(transporter, command, nodeID)
-	transporter.logger.Trace("[Mem-Trans-", transporter.instanceID, "] Publish() command: ", command, " nodeID: ", nodeID, " message: \n", message, "\n - end")
+	transporter.logger.Traceln("[Mem-Trans-", transporter.instanceID, "] Publish() command: ", command, " nodeID: ", nodeID, " message: \n", message, "\n - end")
 
 	transporter.memory.mutex.Lock()
 	subscriptions, exists := transporter.memory.handlers[topic]

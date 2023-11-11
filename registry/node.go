@@ -82,7 +82,7 @@ func (node *Node) Update(id string, info map[string]interface{}) bool {
 	if id != node.id {
 		panic(fmt.Errorf("Node.Update() - the id received : %s does not match this node.id : %s", id, node.id))
 	}
-	node.logger.Debug("node.Update() info: ", info)
+	node.logger.Debugln("node.Update() info: ", info)
 	reconnected := !node.isAvailable
 
 	node.isAvailable = true
@@ -94,7 +94,7 @@ func (node *Node) Update(id string, info map[string]interface{}) bool {
 	node.client = info["client"].(map[string]interface{})
 
 	node.services = filterServices(info)
-	node.logger.Debug("node.Update() node.services: ", node.services)
+	node.logger.Debugln("node.Update() node.services: ", node.services)
 
 	node.sequence = int64Field(info, "seq", 0)
 	node.cpu = int64Field(info, "cpu", 0)

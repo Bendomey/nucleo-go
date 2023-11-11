@@ -60,15 +60,15 @@ func CreateNatsTransporter(options NATSOptions) transit.Transport {
 func (t *NatsTransporter) Connect() chan error {
 	endChan := make(chan error)
 	go func() {
-		t.logger.Debug("NATS Connect() - url: ", t.opts.Url, " Name: ", t.opts.Name)
+		t.logger.Debugln("NATS Connect() - url: ", t.opts.Url, " Name: ", t.opts.Name)
 		conn, err := t.opts.Connect()
 		if err != nil {
-			t.logger.Error("NATS Connect() - Error: ", err, " url: ", t.opts.Url, " Name: ", t.opts.Name)
+			t.logger.Errorln("NATS Connect() - Error: ", err, " url: ", t.opts.Url, " Name: ", t.opts.Name)
 			endChan <- errors.New(fmt.Sprint("Error connection to NATS. error: ", err, " url: ", t.opts.Url))
 			return
 		}
 
-		t.logger.Info("Connected to ", t.opts.Url)
+		t.logger.Infoln("Connected to ", t.opts.Url)
 		t.conn = conn
 		endChan <- nil
 	}()
@@ -84,7 +84,7 @@ func (t *NatsTransporter) Disconnect() chan error {
 		}
 		for _, sub := range t.subscriptions {
 			if err := sub.Unsubscribe(); err != nil {
-				t.logger.Error(err)
+				t.logger.Errorln(err)
 			}
 		}
 		t.conn.Close()
@@ -105,7 +105,7 @@ func (t *NatsTransporter) topicName(command string, nodeID string) string {
 func (t *NatsTransporter) Subscribe(command, nodeID string, handler transit.TransportHandler) {
 	if t.conn == nil {
 		msg := fmt.Sprint("nats.Subscribe() No connection :( -> command: ", command, " nodeID: ", nodeID)
-		t.logger.Warn(msg)
+		t.logger.Warnln(msg)
 		panic(errors.New(msg))
 	}
 
@@ -113,11 +113,11 @@ func (t *NatsTransporter) Subscribe(command, nodeID string, handler transit.Tran
 
 	sub, err := t.conn.Subscribe(topic, func(msg *nats.Msg) {
 		payload := t.serializer.BytesToPayload(&msg.Data)
-		t.logger.Debug(fmt.Sprintf("Incoming %s packet from '%s'", topic, payload.Get("sender").String()))
+		t.logger.Debugln(fmt.Sprintf("Incoming %s packet from '%s'", topic, payload.Get("sender").String()))
 		handler(payload)
 	})
 	if err != nil {
-		t.logger.Error("Cannot subscribe: ", topic, " error: ", err)
+		t.logger.Errorln("Cannot subscribe: ", topic, " error: ", err)
 		return
 	}
 	t.subscriptions = append(t.subscriptions, sub)
@@ -126,16 +126,16 @@ func (t *NatsTransporter) Subscribe(command, nodeID string, handler transit.Tran
 func (t *NatsTransporter) Publish(command, nodeID string, message nucleo.Payload) {
 	if t.conn == nil {
 		msg := fmt.Sprint("nats.Publish() No connection :( -> command: ", command, " nodeID: ", nodeID)
-		t.logger.Warn(msg)
+		t.logger.Warnln(msg)
 		panic(errors.New(msg))
 	}
 
 	topic := t.topicName(command, nodeID)
-	t.logger.Debug("nats.Publish() command: ", command, " topic: ", topic, " nodeID: ", nodeID)
-	t.logger.Trace("message: \n", message, "\n - end")
+	t.logger.Debugln("nats.Publish() command: ", command, " topic: ", topic, " nodeID: ", nodeID)
+	t.logger.Traceln("message: \n", message, "\n - end")
 	err := t.conn.Publish(topic, t.serializer.PayloadToBytes(message))
 	if err != nil {
-		t.logger.Error("Error on publish: error: ", err, " command: ", command, " topic: ", topic)
+		t.logger.Errorln("Error on publish: error: ", err, " command: ", command, " topic: ", topic)
 		panic(err)
 	}
 }

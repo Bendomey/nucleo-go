@@ -266,7 +266,7 @@ func (context *Context) Call(actionName string, params interface{}, opts ...nucl
 
 // Emit : Emit an event (grouped & balanced global event)
 func (context *Context) Emit(eventName string, params interface{}, groups ...string) {
-	context.Logger().Debug("Context Emit() eventName: ", eventName)
+	context.Logger().Debugln("Context Emit() eventName: ", eventName)
 	newContext := context.ChildEventContext(eventName, payload.New(params), groups, false)
 	context.broker.EmitEvent(newContext)
 }
@@ -302,7 +302,7 @@ func (context *Context) Payload() nucleo.Payload {
 }
 
 func (context *Context) SetTargetNodeID(targetNodeID string) {
-	context.Logger().Debug("context factory SetTargetNodeID() targetNodeID: ", targetNodeID)
+	context.Logger().Debugln("context factory SetTargetNodeID() targetNodeID: ", targetNodeID)
 	context.targetNodeID = targetNodeID
 }
 

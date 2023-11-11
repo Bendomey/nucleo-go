@@ -61,7 +61,7 @@ func (actionEntry *ActionEntry) catchActionError(context nucleo.BrokerContext, r
 	}
 	if err := recover(); err != nil {
 		stackTrace := string(debug.Stack())
-		actionEntry.logger.Error("Action failed: ", context.ActionName(), "\n[Error]: ", err, "\n[Stack Trace]: ", stackTrace)
+		actionEntry.logger.Errorln("Action failed: ", context.ActionName(), "\n[Error]: ", err, "\n[Stack Trace]: ", stackTrace)
 		errT, isError := err.(error)
 		msg := ""
 		if isError {
@@ -76,14 +76,14 @@ func (actionEntry *ActionEntry) catchActionError(context nucleo.BrokerContext, r
 func (actionEntry *ActionEntry) invokeLocalAction(context nucleo.BrokerContext) chan nucleo.Payload {
 	result := make(chan nucleo.Payload, 1)
 
-	actionEntry.logger.Trace("Before Invoking action: ", context.ActionName(), " params: ", context.Payload())
+	actionEntry.logger.Traceln("Before Invoking action: ", context.ActionName(), " params: ", context.Payload())
 
 	go func() {
 		defer actionEntry.catchActionError(context, result)
 		handler := actionEntry.action.Handler()
 		actionResult := handler(context.(nucleo.Context), context.Payload())
 
-		actionEntry.logger.Trace("After Invoking action: ", context.ActionName(), " result: ", actionResult)
+		actionEntry.logger.Traceln("After Invoking action: ", context.ActionName(), " result: ", actionResult)
 		result <- payload.New(actionResult)
 	}()
 
@@ -198,7 +198,7 @@ func (actionCatalog *ActionCatalog) printDebugActions() {
 func (actionCatalog *ActionCatalog) Next(actionName string, stg strategy.Strategy) *ActionEntry {
 	actions := actionCatalog.Find(actionName)
 	if actions == nil {
-		actionCatalog.logger.Debug("actionCatalog.Next() action not found: ", actionName, "  actionCatalog.actions: ", actionCatalog.actions)
+		actionCatalog.logger.Debugln("actionCatalog.Next() action not found: ", actionName, "  actionCatalog.actions: ", actionCatalog.actions)
 		return nil
 	}
 	nodes := make([]strategy.Selector, len(actions))
@@ -212,7 +212,7 @@ func (actionCatalog *ActionCatalog) Next(actionName string, stg strategy.Strateg
 		entry := (*selected).(ActionEntry)
 		return &entry
 	}
-	actionCatalog.logger.Debug("actionCatalog.Next() no entries selected for name: ", actionName, "  actionCatalog.actions: ", actionCatalog.actions)
+	actionCatalog.logger.Debugln("actionCatalog.Next() no entries selected for name: ", actionName, "  actionCatalog.actions: ", actionCatalog.actions)
 	return nil
 }
 

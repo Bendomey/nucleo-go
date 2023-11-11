@@ -134,7 +134,7 @@ func (t *AmqpTransporter) Connect() chan error {
 	endChan := make(chan error)
 
 	go func() {
-		t.logger.Debug("AMQP Connect() - url: ", t.opts.Url)
+		t.logger.Debugln("AMQP Connect() - url: ", t.opts.Url)
 
 		isConnected := false
 		connectAttempt := 0
@@ -146,7 +146,7 @@ func (t *AmqpTransporter) Connect() chan error {
 
 			closeNotifyChan, err := t.doConnect(uri)
 			if err != nil {
-				t.logger.Error("AMQP Connect() - Error: ", err, " url: ", uri)
+				t.logger.Errorln("AMQP Connect() - Error: ", err, " url: ", uri)
 			} else if !isConnected {
 				isConnected = true
 				endChan <- nil
@@ -162,11 +162,11 @@ func (t *AmqpTransporter) Connect() chan error {
 			if closeNotifyChan != nil {
 				err = <-closeNotifyChan
 				if t.connectionDisconnecting {
-					t.logger.Info("AMQP connection is closed gracefully")
+					t.logger.Infoln("AMQP connection is closed gracefully")
 					return
 				}
 
-				t.logger.Error("AMQP connection is closed -> ", err)
+				t.logger.Errorln("AMQP connection is closed -> ", err)
 			}
 
 			if t.opts.DisableReconnect {
@@ -189,13 +189,13 @@ func (t *AmqpTransporter) doConnect(uri string) (chan *amqp.Error, error) {
 		return nil, errors.Wrap(err, "AMQP failed to connect")
 	}
 
-	t.logger.Info("AMQP is connected")
+	t.logger.Infoln("AMQP is connected")
 
 	if t.channel, err = t.connection.Channel(); err != nil {
 		return nil, errors.Wrap(err, "AMQP failed to create channel")
 	}
 
-	t.logger.Info("AMQP channel is created")
+	t.logger.Infoln("AMQP channel is created")
 
 	if err := t.channel.Qos(t.opts.Prefetch, 0, false); err != nil {
 		return nil, errors.Wrap(err, "AMQP failed set prefetch count")
@@ -225,7 +225,7 @@ func (t *AmqpTransporter) Disconnect() chan error {
 			t.connectionDisconnecting = true
 
 			if err := t.channel.Close(); err != nil {
-				t.logger.Error("AMQP Disconnect() - Channel close error: ", err)
+				t.logger.Errorln("AMQP Disconnect() - Channel close error: ", err)
 				errChan <- err
 				return
 			}
@@ -233,7 +233,7 @@ func (t *AmqpTransporter) Disconnect() chan error {
 			t.channel = nil
 
 			if err := t.connection.Close(); err != nil {
-				t.logger.Error("AMQP Disconnect() - Connection close error: ", err)
+				t.logger.Errorln("AMQP Disconnect() - Connection close error: ", err)
 				errChan <- err
 				return
 			}
@@ -268,7 +268,7 @@ func (t *AmqpTransporter) subscribeInternal(subscriber subscriber) {
 		needAck := subscriber.command == "REQ"
 		autoDelete, durable, exclusive, args := t.getQueueOptions(subscriber.command, false)
 		if _, err := t.channel.QueueDeclare(topic, durable, autoDelete, exclusive, false, args); err != nil {
-			t.logger.Error("AMQP Subscribe() - Queue declare error: ", err)
+			t.logger.Errorln("AMQP Subscribe() - Queue declare error: ", err)
 			return
 		}
 
@@ -287,18 +287,18 @@ func (t *AmqpTransporter) subscribeInternal(subscriber subscriber) {
 
 		autoDelete, durable, exclusive, args := t.getQueueOptions(subscriber.command, false)
 		if _, err := t.channel.QueueDeclare(queueName, durable, autoDelete, exclusive, false, args); err != nil {
-			t.logger.Error("AMQP Subscribe() - Queue declare error: ", err)
+			t.logger.Errorln("AMQP Subscribe() - Queue declare error: ", err)
 			return
 		}
 
 		durable, autoDelete, args = t.getExchangeOptions()
 		if err := t.channel.ExchangeDeclare(topic, "fanout", durable, autoDelete, false, false, args); err != nil {
-			t.logger.Error("AMQP Subscribe() - Exchange declare error: ", err)
+			t.logger.Errorln("AMQP Subscribe() - Exchange declare error: ", err)
 			return
 		}
 
 		if err := t.channel.QueueBind(b.queueName, b.pattern, b.topic, false, nil); err != nil {
-			t.logger.Error("AMQP Subscribe() - Can't bind queue to exchange: ", err)
+			t.logger.Errorln("AMQP Subscribe() - Can't bind queue to exchange: ", err)
 			return
 		}
 
@@ -309,7 +309,7 @@ func (t *AmqpTransporter) subscribeInternal(subscriber subscriber) {
 func (t *AmqpTransporter) Publish(command, nodeID string, message nucleo.Payload) {
 	if t.channel == nil {
 		msg := fmt.Sprint("AMQP Publish() No connection -> command: ", command, " nodeID: ", nodeID)
-		t.logger.Error(msg)
+		t.logger.Errorln(msg)
 		panic(errors.New(msg))
 	}
 
@@ -359,7 +359,7 @@ func (t *AmqpTransporter) SetSerializer(serializer serializer.Serializer) {
 }
 
 func (t *AmqpTransporter) doConsume(queueName string, needAck bool, handler transit.TransportHandler) {
-	t.logger.Debug("AMQP doConsume() - queue: ", queueName)
+	t.logger.Debugln("AMQP doConsume() - queue: ", queueName)
 
 	msgs, err := t.channel.Consume(queueName, "", !needAck, false, false, true, t.opts.ConsumeOptions)
 	if err != nil {
@@ -380,10 +380,10 @@ func (t *AmqpTransporter) doConsume(queueName string, needAck bool, handler tran
 
 		if needAck {
 			if err = msg.Ack(false); err != nil {
-				t.logger.Error("AMQP doConsume() - Can't acknowledge message: ", err)
+				t.logger.Errorln("AMQP doConsume() - Can't acknowledge message: ", err)
 
 				if err = msg.Nack(false, true); err != nil {
-					t.logger.Error("AMQP doConsume() - Can't negatively acknowledge message: ", err)
+					t.logger.Errorln("AMQP doConsume() - Can't negatively acknowledge message: ", err)
 				}
 			}
 		}

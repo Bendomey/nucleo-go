@@ -75,7 +75,7 @@ func (broker *ServiceBroker) applyServiceConfig(svc *service.Service) {
 				if ok {
 					svc.AddSettings(settings)
 				} else {
-					broker.logger.Error("Could not add service settings - Error converting the input settings to map[string]interface{} - Invalid format! Service Config : ", svcConfig)
+					broker.logger.Errorln("Could not add service settings - Error converting the input settings to map[string]interface{} - Invalid format! Service Config : ", svcConfig)
 				}
 			}
 
@@ -85,11 +85,11 @@ func (broker *ServiceBroker) applyServiceConfig(svc *service.Service) {
 				if ok {
 					svc.AddSettings(metadata)
 				} else {
-					broker.logger.Error("Could not add service metadata - Error converting the input metadata to map[string]interface{} - Invalid format! Service Config : ", svcConfig)
+					broker.logger.Errorln("Could not add service metadata - Error converting the input metadata to map[string]interface{} - Invalid format! Service Config : ", svcConfig)
 				}
 			}
 		} else {
-			broker.logger.Error("Could not apply service configuration - Error converting the service config to map[string]interface{} - Invalid format! Broker Config : ", bkrConfig)
+			broker.logger.Errorln("Could not apply service configuration - Error converting the service config to map[string]interface{} - Invalid format! Broker Config : ", bkrConfig)
 		}
 
 	}
@@ -98,7 +98,7 @@ func (broker *ServiceBroker) applyServiceConfig(svc *service.Service) {
 // startService start a service.
 func (broker *ServiceBroker) startService(svc *service.Service) {
 
-	broker.logger.Debug("Broker start service: ", svc.FullName())
+	broker.logger.Debugln("Broker start service: ", svc.FullName())
 
 	broker.applyServiceConfig(svc)
 
@@ -132,11 +132,11 @@ func (broker *ServiceBroker) waitForDependencies(service *service.Service) {
 			}
 		}
 		if found {
-			broker.logger.Debug("waitForDependencies() - All dependencies were found :) -> service: ", service.Name(), " wait For Dependencies: ", service.Dependencies())
+			broker.logger.Debugln("waitForDependencies() - All dependencies were found :) -> service: ", service.Name(), " wait For Dependencies: ", service.Dependencies())
 			break
 		}
 		if time.Since(start) > broker.config.WaitForDependenciesTimeout {
-			broker.logger.Warn("waitForDependencies() - Time out ! service: ", service.Name(), " wait For Dependencies: ", service.Dependencies())
+			broker.logger.Warnln("waitForDependencies() - Time out ! service: ", service.Name(), " wait For Dependencies: ", service.Dependencies())
 			break
 		}
 		time.Sleep(time.Microsecond)
@@ -173,7 +173,7 @@ func (broker *ServiceBroker) createBrokerLogger() *log.Entry {
 	brokerLogger := log.WithFields(log.Fields{
 		"broker": broker.id,
 	})
-	//broker.logger.Debug("Broker Log Setup -> Level", log.GetLevel(), " nodeID: ", nodeID)
+	//broker.logger.Debugln("Broker Log Setup -> Level", log.GetLevel(), " nodeID: ", nodeID)
 	return brokerLogger
 }
 
@@ -184,7 +184,7 @@ func (broker *ServiceBroker) addService(svc *service.Service) {
 	if broker.started || broker.starting {
 		broker.startService(svc)
 	}
-	broker.logger.Debug("Broker - addService() - fullname: ", svc.FullName(), " # actions: ", len(svc.Actions()), " # events: ", len(svc.Events()))
+	broker.logger.Debugln("Broker - addService() - fullname: ", svc.FullName(), " # actions: ", len(svc.Actions()), " # events: ", len(svc.Events()))
 }
 
 // resolveSchema getting schema from interface
@@ -259,7 +259,7 @@ func (broker *ServiceBroker) waitForService(service string) error {
 		}
 		if time.Since(start) > broker.config.WaitForDependenciesTimeout {
 			err := errors.New("waitForService() - Timeout ! service: " + service)
-			broker.logger.Error(err)
+			broker.logger.Errorln(err)
 			return err
 		}
 		time.Sleep(time.Microsecond)
@@ -276,7 +276,7 @@ func (broker *ServiceBroker) waitAction(action string) error {
 		}
 		if time.Since(start) > broker.config.WaitForDependenciesTimeout {
 			err := errors.New("waitAction() - Timeout ! action: " + action)
-			broker.logger.Error(err)
+			broker.logger.Errorln(err)
 			return err
 		}
 		time.Sleep(time.Microsecond)
@@ -293,7 +293,7 @@ func (broker *ServiceBroker) waitForNode(nodeID string) error {
 		}
 		if time.Since(start) > broker.config.WaitForDependenciesTimeout {
 			err := errors.New("waitForNode() - Timeout ! nodeID: " + nodeID)
-			broker.logger.Error(err)
+			broker.logger.Errorln(err)
 			return err
 		}
 		time.Sleep(time.Microsecond)
@@ -315,12 +315,12 @@ func (broker *ServiceBroker) PublishServices(services ...interface{}) {
 
 func (broker *ServiceBroker) Start() {
 	if broker.IsStarted() {
-		broker.logger.Warn("broker.Start() called on a broker that already started!")
+		broker.logger.Warnln("broker.Start() called on a broker that already started!")
 		return
 	}
 	broker.starting = true
-	broker.logger.Info("nucleo is starting...")
-	broker.logger.Info("Node ID: ", broker.localNode.GetID())
+	broker.logger.Infoln("nucleo is starting...")
+	broker.logger.Infoln("Node ID: ", broker.localNode.GetID())
 
 	broker.middlewares.CallHandlers("brokerStarting", broker.delegates)
 
@@ -340,22 +340,22 @@ func (broker *ServiceBroker) Start() {
 		broker.addService(service)
 	}
 
-	broker.logger.Debug("Broker -> registry started!")
+	broker.logger.Debugln("Broker -> registry started!")
 
 	defer broker.broadcastLocal("$broker.started")
 	defer broker.middlewares.CallHandlers("brokerStarted", broker.delegates)
 
 	broker.started = true
 	broker.starting = false
-	broker.logger.Info("Service Broker with ", len(broker.services), " service(s) started successfully.")
+	broker.logger.Infoln("Service Broker with ", len(broker.services), " service(s) started successfully.")
 }
 
 func (broker *ServiceBroker) Stop() {
 	if !broker.started {
-		broker.logger.Info("Broker is not started!")
+		broker.logger.Infoln("Broker is not started!")
 		return
 	}
-	broker.logger.Info("Service Broker is stopping...")
+	broker.logger.Infoln("Service Broker is stopping...")
 
 	broker.middlewares.CallHandlers("brokerStopping", broker.delegates)
 
@@ -407,7 +407,7 @@ func (broker *ServiceBroker) invokeMCalls(callMaps map[string]map[string]interfa
 			}
 		case <-timeoutChan:
 			timeoutError := errors.New("MCall timeout error.")
-			broker.logger.Error(timeoutError)
+			broker.logger.Errorln(timeoutError)
 			for label, _ := range callMaps {
 				if _, exists := results[label]; !exists {
 					results[label] = payload.New(timeoutError)
@@ -428,7 +428,7 @@ func (broker *ServiceBroker) MCall(callMaps map[string]map[string]interface{}) c
 
 // Call :  invoke a service action and return a channel which will eventualy deliver the results ;)
 func (broker *ServiceBroker) Call(actionName string, params interface{}, opts ...nucleo.Options) chan nucleo.Payload {
-	broker.logger.Trace("Broker - Call() actionName: ", actionName, " params: ", params, " opts: ", opts)
+	broker.logger.Traceln("Broker - Call() actionName: ", actionName, " params: ", params, " opts: ", opts)
 	if !broker.IsStarted() {
 		panic(errors.New("Broker must be started before making calls :("))
 	}
@@ -437,7 +437,7 @@ func (broker *ServiceBroker) Call(actionName string, params interface{}, opts ..
 }
 
 func (broker *ServiceBroker) Emit(event string, params interface{}, groups ...string) {
-	broker.logger.Trace("Broker - Emit() event: ", event, " params: ", params, " groups: ", groups)
+	broker.logger.Traceln("Broker - Emit() event: ", event, " params: ", params, " groups: ", groups)
 	if !broker.IsStarted() {
 		panic(errors.New("Broker must be started before emiting events :("))
 	}
@@ -446,7 +446,7 @@ func (broker *ServiceBroker) Emit(event string, params interface{}, groups ...st
 }
 
 func (broker *ServiceBroker) Broadcast(event string, params interface{}, groups ...string) {
-	broker.logger.Trace("Broker - Broadcast() event: ", event, " params: ", params, " groups: ", groups)
+	broker.logger.Traceln("Broker - Broadcast() event: ", event, " params: ", params, " groups: ", groups)
 	if !broker.IsStarted() {
 		panic(errors.New("Broker must be started before broadcasting events :("))
 	}
@@ -503,7 +503,7 @@ func (broker *ServiceBroker) init() {
 
 	instanceID, err := uuid.GenerateUUID()
 	if err != nil {
-		broker.logger.Error("Could not create an instance id -  error ", err)
+		broker.logger.Errorln("Could not create an instance id -  error ", err)
 		instanceID = "error creating instance id"
 	}
 	broker.instanceID = instanceID

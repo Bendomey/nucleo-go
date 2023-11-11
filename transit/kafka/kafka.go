@@ -92,13 +92,13 @@ func CreateKafkaTransporter(options KafkaOptions) transit.Transport {
 func (t *KafkaTransporter) Connect() chan error {
 	endChan := make(chan error)
 	go func() {
-		t.logger.Debug("Kafka Connect() - url: ", t.opts.Url)
+		t.logger.Debugln("Kafka Connect() - url: ", t.opts.Url)
 
 		topic := t.topicName("PING", t.nodeID)
 		_, err := kafka.DialLeader(context.Background(), "tcp", t.opts.Addr, topic, t.opts.partition)
 
 		if err != nil {
-			t.logger.Error("Kafka Connect() - Error: ", err, " url: ", t.opts.Url)
+			t.logger.Errorln("Kafka Connect() - Error: ", err, " url: ", t.opts.Url)
 			endChan <- errors.New(fmt.Sprint("Error connection to Kafka. error: ", err, " url: ", t.opts.Url))
 			return
 		}
@@ -193,7 +193,7 @@ func (t *KafkaTransporter) doConsume(
 		select {
 		case err := <-errorChannel:
 			if err != nil {
-				t.logger.Error("failed to read messages:", err)
+				t.logger.Errorln("failed to read messages:", err)
 			}
 		case msg := <-messageChannel:
 			payload := t.serializer.BytesToPayload(&msg)
@@ -207,7 +207,7 @@ func (t *KafkaTransporter) doConsume(
 
 func (t *KafkaTransporter) closeReader(reader *kafka.Reader) {
 	if err := reader.Close(); err != nil {
-		t.logger.Error("Could not close topic reader:", err)
+		t.logger.Errorln("Could not close topic reader:", err)
 	}
 }
 
@@ -257,14 +257,14 @@ func (t *KafkaTransporter) publishMessage(message []byte, topic string) {
 	)
 
 	if err != nil {
-		t.logger.Error("failed to write messages:", err)
+		t.logger.Errorln("failed to write messages:", err)
 		return
 	}
 }
 
 func (t *KafkaTransporter) closeWriter(writer *kafka.Writer) {
 	if err := writer.Close(); err != nil {
-		t.logger.Fatal("Could not close topic writer:", err)
+		t.logger.Fatalln("Could not close topic writer:", err)
 	}
 }
 

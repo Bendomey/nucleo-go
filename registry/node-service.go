@@ -113,7 +113,7 @@ func createNodeService(registry *ServiceRegistry) *service.Service {
 							}
 							return list
 						}
-						context.Logger().Debug("$node.actions name: ", name)
+						context.Logger().Debugln("$node.actions name: ", name)
 						if onlyLocal && !has(isLocal) {
 							continue
 						}
@@ -133,7 +133,7 @@ func createNodeService(registry *ServiceRegistry) *service.Service {
 							item["endpoints"] = endpoints()
 						}
 						result = append(result, item)
-						context.Logger().Debug("$node.actions name: ", name, " contents: ", item)
+						context.Logger().Debugln("$node.actions name: ", name, " contents: ", item)
 					}
 
 					return result
@@ -154,7 +154,7 @@ func createNodeService(registry *ServiceRegistry) *service.Service {
 					}{withActions: true},
 				},
 				Handler: func(context nucleo.Context, params nucleo.Payload) interface{} {
-					context.Logger().Debug("$node.services params: ", params.Value())
+					context.Logger().Debugln("$node.services params: ", params.Value())
 
 					//TODO simplify this by removing the .Exists() check once we have action schema validation and default values assignment.
 					skipInternal := params.Get("skipInternal").Exists() && params.Get("skipInternal").Bool()

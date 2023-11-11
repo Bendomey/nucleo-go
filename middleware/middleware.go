@@ -83,7 +83,7 @@ func (dispatch *Dispatch) CallHandlers(name string, params interface{}) interfac
 		}()
 		return <-result
 	} else {
-		dispatch.logger.Trace("No Handlers found for -> ", name)
+		dispatch.logger.Traceln("No Handlers found for -> ", name)
 	}
 	return params
 }

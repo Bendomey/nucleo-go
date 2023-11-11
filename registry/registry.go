@@ -85,10 +85,10 @@ func CreateRegistry(nodeID string, broker *nucleo.BrokerDelegates) *ServiceRegis
 		namespace:             config.Namespace,
 	}
 
-	registry.logger.Debug("Service Registry created for broker: ", nodeID)
+	registry.logger.Debugln("Service Registry created for broker: ", nodeID)
 
 	broker.Bus().On("$broker.started", func(args ...interface{}) {
-		registry.logger.Debug("Registry -> $broker.started event")
+		registry.logger.Debugln("Registry -> $broker.started event")
 		registry.localNode.Available()
 	})
 
@@ -121,7 +121,7 @@ func (registry *ServiceRegistry) setupMessageHandlers() {
 		"INFO":       registry.filterMessages(registry.remoteNodeInfoReceived),
 	}
 	registry.broker.Bus().On("$registry.transit.message", func(args ...interface{}) {
-		registry.logger.Trace("Registry -> $registry.transit.message event - args: ", args)
+		registry.logger.Traceln("Registry -> $registry.transit.message event - args: ", args)
 		command := args[0].(string)
 		message := args[1].(nucleo.Payload)
 		handler := messageHandler[command]
@@ -133,15 +133,15 @@ func (registry *ServiceRegistry) setupMessageHandlers() {
 }
 
 func (registry *ServiceRegistry) Stop() {
-	registry.logger.Debug("Registry Stopping...")
+	registry.logger.Debugln("Registry Stopping...")
 	registry.stopping = true
 	err := <-registry.transit.Disconnect()
 	registry.localNode.Unavailable()
 	if err != nil {
-		registry.logger.Debug("Error trying to disconnect transit - error: ", err)
+		registry.logger.Debugln("Error trying to disconnect transit - error: ", err)
 		return
 	}
-	registry.logger.Debug("Transit Disconnected -> Registry Full Stop!")
+	registry.logger.Debugln("Transit Disconnected -> Registry Full Stop!")
 }
 
 func (registry *ServiceRegistry) LocalServices() []*service.Service {
@@ -150,7 +150,7 @@ func (registry *ServiceRegistry) LocalServices() []*service.Service {
 
 // Start : start the registry background processes.
 func (registry *ServiceRegistry) Start() {
-	registry.logger.Debug("Registry Start() ")
+	registry.logger.Debugln("Registry Start() ")
 	registry.stopping = false
 	err := <-registry.transit.Connect()
 	if err != nil {
@@ -188,11 +188,11 @@ func (registry *ServiceRegistry) HandleRemoteEvent(context nucleo.BrokerContext)
 	name := context.EventName()
 	groups := context.Groups()
 	if registry.stopping {
-		registry.logger.Error("HandleRemoteEvent() - registry is stopping. Discarding event -> name: ", name, " groups: ", groups)
+		registry.logger.Errorln("HandleRemoteEvent() - registry is stopping. Discarding event -> name: ", name, " groups: ", groups)
 		return
 	}
 	broadcast := context.IsBroadcast()
-	registry.logger.Debug("HandleRemoteEvent() - name: ", name, " groups: ", groups)
+	registry.logger.Debugln("HandleRemoteEvent() - name: ", name, " groups: ", groups)
 
 	var stg strategy.Strategy
 	if !broadcast {
@@ -210,12 +210,12 @@ func (registry *ServiceRegistry) LoadBalanceEvent(context nucleo.BrokerContext) 
 	params := context.Payload()
 	groups := context.Groups()
 	eventSig := fmt.Sprint("name: ", name, " groups: ", groups)
-	registry.logger.Trace("LoadBalanceEvent() - ", eventSig, " params: ", params)
+	registry.logger.Traceln("LoadBalanceEvent() - ", eventSig, " params: ", params)
 
 	entries := registry.events.Find(name, groups, true, false, registry.strategy)
 	if entries == nil {
 		msg := fmt.Sprint("Broker - no endpoints found for event: ", name, " it was discarded!")
-		registry.logger.Warn(msg)
+		registry.logger.Warnln(msg)
 		return nil
 	}
 
@@ -226,7 +226,7 @@ func (registry *ServiceRegistry) LoadBalanceEvent(context nucleo.BrokerContext) 
 			registry.emitRemoteEvent(context, eventEntry)
 		}
 	}
-	registry.logger.Trace("LoadBalanceEvent() - ", eventSig, " End.")
+	registry.logger.Traceln("LoadBalanceEvent() - ", eventSig, " End.")
 	return entries
 }
 
@@ -234,12 +234,12 @@ func (registry *ServiceRegistry) BroadcastEvent(context nucleo.BrokerContext) []
 	name := context.EventName()
 	groups := context.Groups()
 	eventSig := fmt.Sprint("name: ", name, " groups: ", groups)
-	registry.logger.Trace("BroadcastEvent() - ", eventSig, " payload: ", context.Payload())
+	registry.logger.Traceln("BroadcastEvent() - ", eventSig, " payload: ", context.Payload())
 
 	entries := registry.events.Find(name, groups, false, false, nil)
 	if entries == nil {
 		msg := fmt.Sprint("Broker - no endpoints found for event: ", name, " it was discarded!")
-		registry.logger.Warn(msg)
+		registry.logger.Warnln(msg)
 		return nil
 	}
 
@@ -250,7 +250,7 @@ func (registry *ServiceRegistry) BroadcastEvent(context nucleo.BrokerContext) []
 			registry.emitRemoteEvent(context, eventEntry)
 		}
 	}
-	registry.logger.Trace("BroadcastEvent() - ", eventSig, " End.")
+	registry.logger.Traceln("BroadcastEvent() - ", eventSig, " End.")
 	return entries
 }
 
@@ -260,7 +260,7 @@ func (registry *ServiceRegistry) LoadBalanceCall(context nucleo.BrokerContext, o
 	actionName := context.ActionName()
 	params := context.Payload()
 
-	registry.logger.Trace("LoadBalanceCall() - actionName: ", actionName, " params: ", params, " namespace: ", registry.namespace, " opts: ", opts)
+	registry.logger.Traceln("LoadBalanceCall() - actionName: ", actionName, " params: ", params, " namespace: ", registry.namespace, " opts: ", opts)
 
 	actionEntry := registry.nextAction(actionName, registry.strategy, opts...)
 	if actionEntry == nil {
@@ -268,12 +268,12 @@ func (registry *ServiceRegistry) LoadBalanceCall(context nucleo.BrokerContext, o
 		if registry.namespace != "" {
 			msg = msg + " namespace: " + registry.namespace
 		}
-		registry.logger.Error(msg)
+		registry.logger.Errorln(msg)
 		resultChan := make(chan nucleo.Payload, 1)
 		resultChan <- payload.Error(msg)
 		return resultChan
 	}
-	registry.logger.Debug("LoadBalanceCall() - actionName: ", actionName, " target nodeID: ", actionEntry.TargetNodeID())
+	registry.logger.Debugln("LoadBalanceCall() - actionName: ", actionName, " target nodeID: ", actionEntry.TargetNodeID())
 
 	if actionEntry.isLocal {
 		registry.broker.MiddlewareHandler("beforeLocalAction", context)
@@ -299,20 +299,20 @@ func (registry *ServiceRegistry) LoadBalanceCall(context nucleo.BrokerContext, o
 
 func (registry *ServiceRegistry) emitRemoteEvent(context nucleo.BrokerContext, eventEntry *EventEntry) {
 	context.SetTargetNodeID(eventEntry.TargetNodeID())
-	registry.logger.Trace("Before invoking remote event: ", context.EventName(), " context.TargetNodeID: ", context.TargetNodeID(), " context.Payload(): ", context.Payload())
+	registry.logger.Traceln("Before invoking remote event: ", context.EventName(), " context.TargetNodeID: ", context.TargetNodeID(), " context.Payload(): ", context.Payload())
 	registry.transit.Emit(context)
 }
 
 func (registry *ServiceRegistry) invokeRemoteAction(context nucleo.BrokerContext, actionEntry *ActionEntry) chan nucleo.Payload {
 	result := make(chan nucleo.Payload, 1)
 	context.SetTargetNodeID(actionEntry.TargetNodeID())
-	registry.logger.Trace("Before invoking remote action: ", context.ActionName(), " context.TargetNodeID: ", context.TargetNodeID(), " context.Payload(): ", context.Payload())
+	registry.logger.Traceln("Before invoking remote action: ", context.ActionName(), " context.TargetNodeID: ", context.TargetNodeID(), " context.Payload(): ", context.Payload())
 
 	go func() {
 		actionResult := <-registry.transit.Request(context)
-		registry.logger.Trace("remote request done! action: ", context.ActionName(), " results: ", actionResult)
+		registry.logger.Traceln("remote request done! action: ", context.ActionName(), " results: ", actionResult)
 		if registry.stopping {
-			registry.logger.Error("invokeRemoteAction() - registry is stopping. Discarding action result -> name: ", context.ActionName())
+			registry.logger.Errorln("invokeRemoteAction() - registry is stopping. Discarding action result -> name: ", context.ActionName())
 			result <- payload.New(errors.New("can't complete request! registry stopping..."))
 		} else {
 			result <- actionResult
@@ -377,11 +377,11 @@ func (registry *ServiceRegistry) loopWhileAlive(frequency time.Duration, delegat
 func (registry *ServiceRegistry) filterMessages(handler func(message nucleo.Payload)) func(message nucleo.Payload) {
 	return func(message nucleo.Payload) {
 		if registry.stopping {
-			registry.logger.Warn("filterMessages() - registry is stopping. Discarding message: ", message)
+			registry.logger.Warnln("filterMessages() - registry is stopping. Discarding message: ", message)
 			return
 		}
 		if message.Get("sender").Exists() && message.Get("sender").String() == registry.localNode.GetID() {
-			registry.logger.Debug("filterMessages() - Same host message (sender == localNodeID). discarding... ", message)
+			registry.logger.Debugln("filterMessages() - Same host message (sender == localNodeID). discarding... ", message)
 			return
 		}
 		handler(message)
@@ -402,7 +402,7 @@ func (registry *ServiceRegistry) heartbeatMessageReceived(message nucleo.Payload
 func (registry *ServiceRegistry) disconnectMessageReceived(message nucleo.Payload) {
 	sender := message.Get("sender").String()
 	node, exists := registry.nodes.findNode(sender)
-	registry.logger.Debug("disconnectMessageReceived() sender: ", sender, " exists: ", exists)
+	registry.logger.Debugln("disconnectMessageReceived() sender: ", sender, " exists: ", exists)
 	if exists {
 		registry.disconnectNode(node.GetID())
 	}
@@ -506,7 +506,7 @@ func (registry *ServiceRegistry) subscribeInternalEvent(event service.Event) {
 // it will create endpoints for all service actions.
 func (registry *ServiceRegistry) AddLocalService(service *service.Service) {
 	if registry.services.Find(service.Name(), service.Version(), registry.localNode.GetID()) {
-		registry.logger.Trace("registry - AddLocalService() - Service already registered, will ignore.. service fullName: ", service.FullName())
+		registry.logger.Traceln("registry - AddLocalService() - Service already registered, will ignore.. service fullName: ", service.FullName())
 		return
 	}
 
@@ -526,7 +526,7 @@ func (registry *ServiceRegistry) AddLocalService(service *service.Service) {
 		}
 	}
 	registry.localNode.Publish(service.AsMap())
-	registry.logger.Debug("Registry published local service: ", service.FullName(), " # actions: ", len(actions), " # events: ", len(events), " nodeID: ", service.NodeID())
+	registry.logger.Debugln("Registry published local service: ", service.FullName(), " # actions: ", len(actions), " # events: ", len(events), " nodeID: ", service.NodeID())
 	registry.notifyServiceAdded(service.Summary())
 }
 

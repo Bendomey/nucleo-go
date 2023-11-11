@@ -106,7 +106,7 @@ func (pubsub *PubSub) pendingRequestsByNode(nodeId string) []pendingRequest {
 func (pubsub *PubSub) requestTimedOut(resultChan *chan nucleo.Payload, context nucleo.BrokerContext) func() {
 	pError := payload.New(errors.New("request timeout"))
 	return func() {
-		pubsub.logger.Debug("requestTimedOut() nodeID: ", context.TargetNodeID())
+		pubsub.logger.Debugln("requestTimedOut() nodeID: ", context.TargetNodeID())
 		pubsub.pendingRequestsMutex.Lock()
 		defer pubsub.pendingRequestsMutex.Unlock()
 
@@ -124,7 +124,7 @@ func (pubsub *PubSub) onNodeDisconnected(values ...interface{}) {
 
 	var nodeID string = values[0].(string)
 	pending := pubsub.pendingRequestsByNode(nodeID)
-	pubsub.logger.Debug("onNodeDisconnected() nodeID: ", nodeID, " pending: ", len(pending))
+	pubsub.logger.Debugln("onNodeDisconnected() nodeID: ", nodeID, " pending: ", len(pending))
 	if len(pending) > 0 {
 		pError := payload.New(fmt.Errorf("Node %s disconnected. The request was canceled.", nodeID))
 		for _, p := range pending {
@@ -143,7 +143,7 @@ func (pubsub *PubSub) onNodeDisconnected(values ...interface{}) {
 func (pubsub *PubSub) onNodeConnected(values ...interface{}) {
 	nodeID := values[0].(string)
 	neighbours := values[1].(int64)
-	pubsub.logger.Debug("onNodeConnected() nodeID: ", nodeID, " neighbours: ", neighbours)
+	pubsub.logger.Debugln("onNodeConnected() nodeID: ", nodeID, " neighbours: ", neighbours)
 	pubsub.neighboursMutex.Lock()
 	pubsub.knownNeighbours[nodeID] = neighbours
 	pubsub.neighboursMutex.Unlock()
@@ -162,19 +162,19 @@ func isKafka(v string) bool {
 func (pubsub *PubSub) createTransport() transit.Transport {
 	var transport transit.Transport
 	if pubsub.broker.Config.TransporterFactory != nil {
-		pubsub.logger.Info("Transporter: Custom factory")
+		pubsub.logger.Infoln("Transporter: Custom factory")
 		transport = pubsub.broker.Config.TransporterFactory().(transit.Transport)
 	} else if pubsub.broker.Config.Transporter == "STAN" {
-		pubsub.logger.Info("Transporter: NatsStreamingTransporter")
+		pubsub.logger.Infoln("Transporter: NatsStreamingTransporter")
 		transport = pubsub.createStanTransporter()
 	} else if isNats(pubsub.broker.Config.Transporter) {
-		pubsub.logger.Info("Transporter: NatsTransporter")
+		pubsub.logger.Infoln("Transporter: NatsTransporter")
 		transport = pubsub.createNatsTransporter()
 	} else if isKafka(pubsub.broker.Config.Transporter) {
-		pubsub.logger.Info("Transporter: KafkaTransporter")
+		pubsub.logger.Infoln("Transporter: KafkaTransporter")
 		transport = pubsub.createKafkaTransporter()
 	} else {
-		pubsub.logger.Info("Transporter: Memory")
+		pubsub.logger.Infoln("Transporter: Memory")
 		transport = pubsub.createMemoryTransporter()
 	}
 	transport.SetPrefix(resolveNamespace(pubsub.broker.Config.Namespace))
@@ -191,14 +191,14 @@ func resolveNamespace(namespace string) string {
 }
 
 func (pubsub *PubSub) createMemoryTransporter() transit.Transport {
-	pubsub.logger.Debug("createMemoryTransporter() ... ")
+	pubsub.logger.Debugln("createMemoryTransporter() ... ")
 	logger := pubsub.logger.WithField("transport", "memory")
 	mem := memory.Create(logger, &memory.SharedMemory{})
 	return &mem
 }
 
 func (pubsub *PubSub) createKafkaTransporter() transit.Transport {
-	pubsub.logger.Debug("createKafkaTransporter()")
+	pubsub.logger.Debugln("createKafkaTransporter()")
 
 	return kafka.CreateKafkaTransporter(kafka.KafkaOptions{
 		Url:        pubsub.broker.Config.Transporter,
@@ -209,7 +209,7 @@ func (pubsub *PubSub) createKafkaTransporter() transit.Transport {
 }
 
 func (pubsub *PubSub) createNatsTransporter() transit.Transport {
-	pubsub.logger.Debug("createNatsTransporter()")
+	pubsub.logger.Debugln("createNatsTransporter()")
 
 	return nats.CreateNatsTransporter(nats.NATSOptions{
 		URL:            pubsub.broker.Config.Transporter,
@@ -268,11 +268,11 @@ func (pubsub *PubSub) waitForNeighbours() bool {
 		expected := pubsub.expectedNeighbours()
 		neighbours := pubsub.neighbours()
 		if expected <= neighbours && (expected > 0 || neighbours > 0) {
-			pubsub.logger.Debug("waitForNeighbours() - received info from all expected neighbours :) -> expected: ", expected)
+			pubsub.logger.Debugln("waitForNeighbours() - received info from all expected neighbours :) -> expected: ", expected)
 			return true
 		}
 		if time.Since(start) > pubsub.neighboursTimeout {
-			pubsub.logger.Warn("waitForNeighbours() - Time out ! did not receive info from all expected neighbours: ", expected, "  INFOs received: ", neighbours)
+			pubsub.logger.Warnln("waitForNeighbours() - Time out ! did not receive info from all expected neighbours: ", expected, "  INFOs received: ", neighbours)
 			return false
 		}
 		if !pubsub.isConnected {
@@ -329,11 +329,11 @@ func (pubsub *PubSub) Emit(context nucleo.BrokerContext) {
 		payload["dataType"] = DATATYPE_NULL
 	}
 
-	pubsub.logger.Trace("Emit() targetNodeID: ", targetNodeID, " payload: ", payload)
+	pubsub.logger.Traceln("Emit() targetNodeID: ", targetNodeID, " payload: ", payload)
 
 	message, err := pubsub.serializer.MapToPayload(&payload)
 	if err != nil {
-		pubsub.logger.Error("Emit() Error serializing the payload: ", payload, " error: ", err)
+		pubsub.logger.Errorln("Emit() Error serializing the payload: ", payload, " error: ", err)
 		panic(fmt.Errorf("Error trying to serialize the payload. Likely issues with the action params. Error: %s", err))
 	}
 	pubsub.transport.Publish("EVENT", targetNodeID, message)
@@ -354,16 +354,16 @@ func (pubsub *PubSub) Request(context nucleo.BrokerContext) chan nucleo.Payload 
 		payload["paramsType"] = DATATYPE_NULL
 	}
 
-	pubsub.logger.Trace("Request() targetNodeID: ", targetNodeID, " payload: ", payload)
+	pubsub.logger.Traceln("Request() targetNodeID: ", targetNodeID, " payload: ", payload)
 
 	message, err := pubsub.serializer.MapToPayload(&payload)
 	if err != nil {
-		pubsub.logger.Error("Request() Error serializing the payload: ", payload, " error: ", err)
+		pubsub.logger.Errorln("Request() Error serializing the payload: ", payload, " error: ", err)
 		panic(fmt.Errorf("Error trying to serialize the payload. Likely issues with the action params. Error: %s", err))
 	}
 
 	pubsub.pendingRequestsMutex.Lock()
-	pubsub.logger.Debug("Request() pending request id: ", context.ID(), " targetNodeId: ", context.TargetNodeID())
+	pubsub.logger.Debugln("Request() pending request id: ", context.ID(), " targetNodeId: ", context.TargetNodeID())
 	pubsub.pendingRequests[context.ID()] = pendingRequest{
 		context,
 		&resultChan,
@@ -385,7 +385,7 @@ func (pubsub *PubSub) validate(handler func(message nucleo.Payload)) transit.Tra
 		if valid {
 			handler(msg)
 		} else {
-			pubsub.logger.Trace("Discarding invalid msg -> ", msg.Value())
+			pubsub.logger.Traceln("Discarding invalid msg -> ", msg.Value())
 		}
 	}
 }
@@ -402,7 +402,7 @@ func (pubsub *PubSub) validateVersion(msg nucleo.Payload) bool {
 	if msgVersion == version.NucleoProtocol() {
 		return true
 	} else {
-		pubsub.logger.Error("Discarding msg - wronging version: ", msgVersion, " expected: ", version.NucleoProtocol(), " msg: ", msg)
+		pubsub.logger.Errorln("Discarding msg - wronging version: ", msgVersion, " expected: ", version.NucleoProtocol(), " msg: ", msg)
 		return false
 	}
 }
@@ -415,16 +415,16 @@ func (pubsub *PubSub) reponseHandler() transit.TransportHandler {
 
 		id := message.Get("id").String()
 		sender := message.Get("sender").String()
-		pubsub.logger.Debug("reponseHandler() - response arrived from nodeID: ", sender, " context id: ", id)
+		pubsub.logger.Debugln("reponseHandler() - response arrived from nodeID: ", sender, " context id: ", id)
 
 		request, exists := pubsub.pendingRequests[id]
 
 		if !exists {
-			pubsub.logger.Debug("reponseHandler() - discarding response -> request does not exist for id: ", id, " - message: ", message.Value())
+			pubsub.logger.Debugln("reponseHandler() - discarding response -> request does not exist for id: ", id, " - message: ", message.Value())
 			return
 		}
 		if request.resultChan == nil {
-			pubsub.logger.Debug("reponseHandler() - discarding response -> request.resultChan is nil! - message: ", message.Value(), " pending context: ", request.context)
+			pubsub.logger.Debugln("reponseHandler() - discarding response -> request.resultChan is nil! - message: ", message.Value(), " pending context: ", request.context)
 			return
 		}
 
@@ -437,7 +437,7 @@ func (pubsub *PubSub) reponseHandler() transit.TransportHandler {
 			result = pubsub.parseError(message)
 		}
 
-		pubsub.logger.Trace("reponseHandler() id: ", id, " result: ", result)
+		pubsub.logger.Traceln("reponseHandler() id: ", id, " result: ", result)
 		(*request.resultChan) <- result
 	}
 }
@@ -456,7 +456,7 @@ func (pubsub *PubSub) isnucleoJSError(message nucleo.Payload) bool {
 func (pubsub *PubSub) nucleoJSError(message nucleo.Payload) error {
 	msg := message.Get("error").Get("message").String()
 	if message.Get("error").Get("stack").Exists() {
-		pubsub.logger.Error(message.Get("error").Get("stack").Value())
+		pubsub.logger.Errorln(message.Get("error").Get("stack").Value())
 	}
 	return errors.New(msg)
 }
@@ -506,11 +506,11 @@ func (pubsub *PubSub) sendResponse(context nucleo.BrokerContext, response nucleo
 
 	message, err := pubsub.serializer.MapToPayload(&values)
 	if err != nil {
-		pubsub.logger.Error("sendResponse() Erro serializing the values: ", values, " error: ", err)
+		pubsub.logger.Errorln("sendResponse() Erro serializing the values: ", values, " error: ", err)
 		panic(err)
 	}
 
-	pubsub.logger.Trace("sendResponse() targetNodeID: ", targetNodeID, " values: ", values, " message: ", message)
+	pubsub.logger.Traceln("sendResponse() targetNodeID: ", targetNodeID, " values: ", values, " message: ", message)
 
 	pubsub.transport.Publish("RES", targetNodeID, message)
 }
@@ -536,7 +536,7 @@ func (pubsub *PubSub) requestHandler() transit.TransportHandler {
 		paramsType := parseParamsType(message.Get("paramsType"))
 		if paramsType != "1" && paramsType != "2" {
 			errMsg := "Expecting paramsType == 2 (JSON) or 1 (Null) - received: " + paramsType
-			pubsub.logger.Error(errMsg)
+			pubsub.logger.Errorln(errMsg)
 			//currently there is only one serializer implementation.
 			//once more serializers are added, pubsub.serializer must change and be dinamic based on paramsType
 			pubsub.sendResponse(context.ActionContext(pubsub.broker, nil), payload.Error(errMsg))
@@ -616,7 +616,7 @@ func (pubsub *PubSub) discoverHandler() transit.TransportHandler {
 
 func (pubsub *PubSub) emitRegistryEvent(command string) transit.TransportHandler {
 	return func(message nucleo.Payload) {
-		pubsub.logger.Trace("emitRegistryEvent() command: ", command, " message: ", message)
+		pubsub.logger.Traceln("emitRegistryEvent() command: ", command, " message: ", message)
 		pubsub.broker.Bus().EmitAsync("$registry.transit.message", []interface{}{command, message})
 	}
 }
@@ -701,7 +701,7 @@ func (pubsub *PubSub) Disconnect() chan error {
 		endChan <- nil
 		return endChan
 	}
-	pubsub.logger.Info("PubSub - Disconnecting transport...")
+	pubsub.logger.Infoln("PubSub - Disconnecting transport...")
 	pubsub.sendDisconnect()
 	pubsub.isConnected = false
 	return pubsub.transport.Disconnect()
@@ -714,18 +714,18 @@ func (pubsub *PubSub) Connect() chan error {
 		endChan <- nil
 		return endChan
 	}
-	pubsub.logger.Debug("PubSub - Connecting transport...")
+	pubsub.logger.Debugln("PubSub - Connecting transport...")
 	pubsub.transport = pubsub.createTransport()
 	go func() {
 		err := <-pubsub.transport.Connect()
 		if err == nil {
 			pubsub.isConnected = true
-			pubsub.logger.Debug("PubSub - Transport Connected!")
+			pubsub.logger.Debugln("PubSub - Transport Connected!")
 
 			pubsub.subscribe()
 
 		} else {
-			pubsub.logger.Debug("PubSub - Error connecting transport - error: ", err)
+			pubsub.logger.Debugln("PubSub - Error connecting transport - error: ", err)
 		}
 		endChan <- err
 	}()

@@ -15,7 +15,7 @@ var Calculator = nucleo.ServiceSchema{
 			Name:        "add",
 			Description: "add two numbers",
 			Handler: func(ctx nucleo.Context, params nucleo.Payload) interface{} {
-				ctx.Logger().Info("add action called")
+				ctx.Logger().Infoln("add action called")
 
 				return params.Get("a").Int() + params.Get("b").Int()
 			},

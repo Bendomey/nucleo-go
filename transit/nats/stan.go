@@ -49,14 +49,14 @@ func CreateStanTransporter(options StanOptions) StanTransporter {
 func (transporter *StanTransporter) Connect() chan error {
 	endChan := make(chan error)
 	go func() {
-		transporter.logger.Debug("STAN Connect() - url: ", transporter.url, " clusterID: ", transporter.clusterID, " clientID: ", transporter.clientID)
+		transporter.logger.Debugln("STAN Connect() - url: ", transporter.url, " clusterID: ", transporter.clusterID, " clientID: ", transporter.clientID)
 		connection, err := stan.Connect(transporter.clusterID, transporter.clientID, stan.NatsURL(transporter.url))
 		if err != nil {
-			transporter.logger.Error("STAN Connect() - Error: ", err, " clusterID: ", transporter.clusterID, " clientID: ", transporter.clientID)
+			transporter.logger.Errorln("STAN Connect() - Error: ", err, " clusterID: ", transporter.clusterID, " clientID: ", transporter.clientID)
 			endChan <- err
 			return
 		}
-		transporter.logger.Info("STAN Connect() - connection success!")
+		transporter.logger.Infoln("STAN Connect() - connection success!")
 		transporter.connection = connection
 		endChan <- nil
 	}()
@@ -70,20 +70,20 @@ func (transporter *StanTransporter) Disconnect() chan error {
 			endChan <- nil
 			return
 		}
-		transporter.logger.Debug("Disconnect() # of subscriptions: ", len(transporter.subscriptions))
+		transporter.logger.Debugln("Disconnect() # of subscriptions: ", len(transporter.subscriptions))
 		for _, sub := range transporter.subscriptions {
 			error := sub.Unsubscribe()
 			if error != nil {
-				transporter.logger.Error("Disconnect() error when unsubscribing stan subscription: ", error)
+				transporter.logger.Errorln("Disconnect() error when unsubscribing stan subscription: ", error)
 			}
 		}
-		transporter.logger.Debug("Disconnect() subscriptions unsubscribed.")
+		transporter.logger.Debugln("Disconnect() subscriptions unsubscribed.")
 		err := transporter.connection.Close()
 		if err == nil {
-			transporter.logger.Debug("Disconnect() stan connection closed :)")
+			transporter.logger.Debugln("Disconnect() stan connection closed :)")
 			endChan <- nil
 		} else {
-			transporter.logger.Error("Disconnect() error when closing stan connection :( ", err)
+			transporter.logger.Errorln("Disconnect() error when closing stan connection :( ", err)
 			endChan <- err
 		}
 		transporter.connection = nil
@@ -112,22 +112,22 @@ func (transporter *StanTransporter) SetSerializer(serializer serializer.Serializ
 func (transporter *StanTransporter) Subscribe(command string, nodeID string, handler transit.TransportHandler) {
 	if transporter.connection == nil {
 		msg := fmt.Sprint("stan.Subscribe() No connection :( -> command: ", command, " nodeID: ", nodeID)
-		transporter.logger.Warn(msg)
+		transporter.logger.Warnln(msg)
 		panic(errors.New(msg))
 	}
 
 	topic := topicName(transporter, command, nodeID)
-	transporter.logger.Trace("stan.Subscribe() command: ", command, " nodeID: ", nodeID, " topic: ", topic)
+	transporter.logger.Traceln("stan.Subscribe() command: ", command, " nodeID: ", nodeID, " topic: ", topic)
 
 	sub, err := transporter.connection.Subscribe(topic, func(msg *stan.Msg) {
-		transporter.logger.Trace("stan.Subscribe() command: ", command, " nodeID: ", nodeID, " msg: \n", msg, "\n - end")
+		transporter.logger.Traceln("stan.Subscribe() command: ", command, " nodeID: ", nodeID, " msg: \n", msg, "\n - end")
 		message := transporter.serializer.BytesToPayload(&msg.Data)
 		if transporter.validateMsg(message) {
 			handler(message)
 		}
 	})
 	if err != nil {
-		transporter.logger.Error("Subscribe() - Error: ", err)
+		transporter.logger.Errorln("Subscribe() - Error: ", err)
 		panic(err)
 	}
 	transporter.subscriptions = append(transporter.subscriptions, sub)
@@ -136,14 +136,14 @@ func (transporter *StanTransporter) Subscribe(command string, nodeID string, han
 func (transporter *StanTransporter) Publish(command, nodeID string, message nucleo.Payload) {
 	if transporter.connection == nil {
 		msg := fmt.Sprint("stan.Publish() No connection :( -> command: ", command, " nodeID: ", nodeID)
-		transporter.logger.Warn(msg)
+		transporter.logger.Warnln(msg)
 		panic(errors.New(msg))
 	}
 	topic := topicName(transporter, command, nodeID)
-	transporter.logger.Trace("stan.Publish() command: ", command, " nodeID: ", nodeID, " message: \n", message, "\n - end")
+	transporter.logger.Traceln("stan.Publish() command: ", command, " nodeID: ", nodeID, " message: \n", message, "\n - end")
 	err := transporter.connection.Publish(topic, transporter.serializer.PayloadToBytes(message))
 	if err != nil {
-		transporter.logger.Error("Error on publish: error: ", err, " command: ", command, " topic: ", topic)
+		transporter.logger.Errorln("Error on publish: error: ", err, " command: ", command, " topic: ", topic)
 		panic(err)
 	}
 }
