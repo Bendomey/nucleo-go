@@ -145,8 +145,7 @@ func (registry *ServiceRegistry) Stop() {
 }
 
 func (registry *ServiceRegistry) LocalServices() []*service.Service {
-	return []*service.Service{}
-	// return []*service.Service{createNodeService(registry)}
+	return []*service.Service{createNodeService(registry)}
 }
 
 // Start : start the registry background processes.

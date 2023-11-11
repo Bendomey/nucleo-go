@@ -190,7 +190,7 @@ func discoverNodeID() string {
 }
 
 var DefaultConfig = Config{
-	Namespace:                  "nucleo-example-ns",
+	Namespace:                  "",
 	LogLevel:                   LogLevelInfo,
 	LogFormat:                  LogFormatText,
 	Serializer:                 SerializerJSON,
