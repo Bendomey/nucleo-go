@@ -117,8 +117,7 @@ type StrategyFactoryFunc func() interface{}
 type ValidatorType string
 
 const (
-	ValidatorGo  ValidatorType = "GoValidator"
-	ValidatorJoi ValidatorType = "Joi"
+	ValidatorGo ValidatorType = "GoValidator"
 )
 
 type LogLevelType string

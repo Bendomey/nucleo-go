@@ -12,9 +12,8 @@ type Validator interface {
 }
 
 type ValidatorContext struct {
-	Type         nucleo.ValidatorType
-	GoValidator  *GoValidator
-	JoiValidator *JoiValidator
+	Type        nucleo.ValidatorType
+	GoValidator *GoValidator
 }
 
 type NewValidatorInput struct {
@@ -27,15 +26,9 @@ func NewValidator(input NewValidatorInput) Validator {
 		goValidator = NewGoValidator()
 	}
 
-	var joiValidator *JoiValidator
-	if input.Type == nucleo.ValidatorGo {
-		joiValidator = NewJoiValidator()
-	}
-
 	return &ValidatorContext{
-		Type:         input.Type,
-		GoValidator:  goValidator,
-		JoiValidator: joiValidator,
+		Type:        input.Type,
+		GoValidator: goValidator,
 	}
 }
 
@@ -43,8 +36,6 @@ func (validator ValidatorContext) Validate(params nucleo.Payload, schema interfa
 	switch validator.Type {
 	case nucleo.ValidatorGo:
 		return validator.GoValidator.Validate(params, schema.(map[string]interface{}))
-	case nucleo.ValidatorJoi:
-		return validator.JoiValidator.Validate(params, schema)
 	}
 
 	// default to go validator
