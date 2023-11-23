@@ -6,7 +6,6 @@ type NucleoValidationError struct {
 
 type NewNucleoValidationErrorInput struct {
 	Message string
-	Type    string
 	Data    interface{}
 }
 

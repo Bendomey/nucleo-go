@@ -1,8 +1,6 @@
 package middleware
 
 import (
-	"fmt"
-
 	"github.com/Bendomey/nucleo-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -72,8 +70,8 @@ func nextHandler(handlers *[]nucleo.MiddlewareHandler, index *int, params interf
 
 // CallHandlers invoke handlers that subscribe to this topic.
 func (dispatch *Dispatch) CallHandlers(name string, params interface{}) interface{} {
-	fmt.Print("dispatch.handlers", dispatch, name)
 	handlers := dispatch.handlers[name]
+	dispatch.logger.Infoln("dispatch.handlers for ", name, handlers)
 	if len(handlers) > 0 {
 		result := make(chan interface{})
 		index := 0

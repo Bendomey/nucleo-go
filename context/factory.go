@@ -21,6 +21,7 @@ type Context struct {
 	eventName    string
 	groups       []string
 	broadcast    bool
+	paramsSchema map[string]interface{}
 	params       nucleo.Payload
 	meta         nucleo.Payload
 	timeout      int
@@ -299,6 +300,14 @@ func (context *Context) Groups() []string {
 
 func (context *Context) Payload() nucleo.Payload {
 	return context.params
+}
+
+func (context *Context) PayloadSchema() map[string]interface{} {
+	return context.paramsSchema
+}
+
+func (context *Context) SetPayloadSchema(schema map[string]interface{}) {
+	context.paramsSchema = schema
 }
 
 func (context *Context) SetTargetNodeID(targetNodeID string) {

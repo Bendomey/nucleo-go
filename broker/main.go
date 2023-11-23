@@ -14,6 +14,7 @@ import (
 	"github.com/Bendomey/nucleo-go/registry"
 	"github.com/Bendomey/nucleo-go/serializer"
 	"github.com/Bendomey/nucleo-go/service"
+	"github.com/Bendomey/nucleo-go/validators"
 	"github.com/hashicorp/go-uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -49,6 +50,8 @@ type ServiceBroker struct {
 	instanceID string
 
 	localNode nucleo.Node
+
+	validator validators.Validator
 }
 
 // GetLocalBus : return the service broker local bus (Event Emitter)
@@ -489,13 +492,22 @@ func (broker *ServiceBroker) registerMiddlewares() {
 }
 
 func (broker *ServiceBroker) registerInternalMiddlewares() {
+	// Metrics
 	broker.middlewares.Add(metrics.Middlewares())
+
+	// Validation
+	broker.middlewares.Add(broker.validator.Middlewares())
 }
 
 func (broker *ServiceBroker) init() {
 	broker.id = broker.config.DiscoverNodeID()
 	broker.logger = broker.createBrokerLogger()
 	broker.setupLocalBus()
+
+	// Validator
+	validator := validators.Resolve(broker.config)
+	broker.validator = validator
+	broker.logger.Infoln("Validator: ", validator.GetValidatorName())
 
 	broker.registerMiddlewares()
 

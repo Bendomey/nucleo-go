@@ -63,8 +63,7 @@ type Payload interface {
 }
 
 // ActionSchema is used by the validation engine to check if parameters sent to the action are valid.
-type ActionParams interface {
-}
+type ActionParams = Payload
 
 type ObjectSchema struct {
 	Source interface{}
@@ -73,7 +72,7 @@ type ObjectSchema struct {
 type Action struct {
 	Name        string
 	Handler     ActionHandler
-	Params      ActionParams
+	Params      map[string]interface{}
 	Settings    map[string]interface{}
 	Description string
 }
@@ -115,6 +114,13 @@ type Mixin struct {
 type TransporterFactoryFunc func() interface{}
 type StrategyFactoryFunc func() interface{}
 
+type ValidatorType string
+
+const (
+	ValidatorGo  ValidatorType = "GoValidator"
+	ValidatorJoi ValidatorType = "Joi"
+)
+
 type LogLevelType string
 
 const (
@@ -150,6 +156,7 @@ type Config struct {
 	LogLevel                   LogLevelType
 	LogFormat                  LogFormatType
 	Serializer                 SerializerType
+	Validator                  ValidatorType
 	DiscoverNodeID             func() string
 	Transporter                string
 	TransporterFactory         TransporterFactoryFunc
@@ -194,6 +201,7 @@ var DefaultConfig = Config{
 	LogLevel:                   LogLevelInfo,
 	LogFormat:                  LogFormatText,
 	Serializer:                 SerializerJSON,
+	Validator:                  ValidatorGo,
 	DiscoverNodeID:             discoverNodeID,
 	Transporter:                "MEMORY",
 	Strategy:                   StrategyRandom,
@@ -256,6 +264,8 @@ type BrokerContext interface {
 	ActionName() string
 	EventName() string
 	Payload() Payload
+	SetPayloadSchema(schema map[string]interface{})
+	PayloadSchema() map[string]interface{}
 	Groups() []string
 	IsBroadcast() bool
 	Caller() string
