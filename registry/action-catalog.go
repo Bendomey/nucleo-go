@@ -190,8 +190,7 @@ func (actionCatalog *ActionCatalog) printDebugActions() {
 		}
 		return true
 	})
-	fmt.Println("actions: ", strings.Join(allActions, ", "))
-	fmt.Println("")
+	actionCatalog.logger.Debugln("actions: ", strings.Join(allActions, ", "))
 }
 
 // Next find all actions registered in this node and use the strategy to select and return the best one to be called.

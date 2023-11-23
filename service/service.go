@@ -138,6 +138,10 @@ func (serviceAction *Action) FullName() string {
 	return serviceAction.fullname
 }
 
+func (serviceAction *Action) Params() nucleo.Payload {
+	return serviceAction.params
+}
+
 func (service *Service) Name() string {
 	return service.name
 }
@@ -371,7 +375,7 @@ func (service *Service) AsMap() map[string]interface{} {
 			actionInfo := make(map[string]interface{})
 			actionInfo["name"] = serviceAction.fullname
 			actionInfo["rawName"] = serviceAction.name
-			actionInfo["params"] = paramsAsMap(&serviceAction.params)
+			actionInfo["params"] = paramsAsMap(serviceAction.params)
 			actions[serviceAction.fullname] = actionInfo
 		}
 	}
@@ -399,18 +403,17 @@ func isInternalEvent(event Event) bool {
 }
 
 func paramsFromMap(schema interface{}) nucleo.ActionParams {
-	// if schema != nil {
-	//mapValues = schema.(map[string]interface{})
-	//TODO
-	// }
-	return nucleo.ObjectSchema{nil}
+	if schema != nil {
+		mapValues := schema.(map[string]interface{})
+		return payload.New(mapValues)
+	}
+
+	return payload.Empty()
 }
 
 // nucleo.ParamsAsMap converts params schema into a map.
-func paramsAsMap(params *nucleo.ActionParams) map[string]interface{} {
-	//TODO
-	schema := make(map[string]interface{})
-	return schema
+func paramsAsMap(params nucleo.ActionParams) map[string]interface{} {
+	return params.RawMap()
 }
 
 func (service *Service) AddActionMap(actionInfo map[string]interface{}) *Action {
@@ -523,7 +526,7 @@ func (service *Service) populateFromSchema() {
 			service.fullname,
 			actionSchema.Name,
 			actionSchema.Handler,
-			actionSchema.Params,
+			paramsFromMap(actionSchema.Params),
 		)
 	}
 
@@ -874,7 +877,7 @@ func FromSchema(schema nucleo.ServiceSchema, bkr *nucleo.BrokerDelegates) *Servi
 	service := &Service{schema: &schema, logger: logger}
 	service.populateFromSchema()
 	if service.name == "" {
-		panic(errors.New("Service name can't be empty! Maybe it is not a valid Service schema."))
+		panic(errors.New("Service name can't be empty! Maybe it is not a valid Service schema"))
 	}
 	if service.created != nil {
 		go service.created((*service.schema), service.logger)
@@ -886,7 +889,7 @@ func CreateServiceFromMap(serviceInfo map[string]interface{}) *Service {
 	service := &Service{}
 	populateFromMap(service, serviceInfo)
 	if service.name == "" {
-		panic(errors.New("Service name can't be empty! Maybe it is not a valid Service schema."))
+		panic(errors.New("Service name can't be empty! Maybe it is not a valid Service schema"))
 	}
 	return service
 }

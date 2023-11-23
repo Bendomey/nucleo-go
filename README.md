@@ -23,7 +23,7 @@ Progressive microservices framework for distributed systems development in golan
 
 - [x] Standard Project Template
 - [ ] CLI for Project Seed Generation
-- [ ] Action validators: go Validator, [Joi](https://github.com/softbrewery/gojoi)
+- [x] Action validators: go Validator
 - [ ] More Load balancing implementations (cpu-usage, latency)
 - [ ] Fault tolerance features (Circuit Breaker, Bulkhead, Retry, Timeout, Fallback)
 - [ ] Built-in caching solution (memory, Redis)

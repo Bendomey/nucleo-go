@@ -275,8 +275,19 @@ func (registry *ServiceRegistry) LoadBalanceCall(context nucleo.BrokerContext, o
 	}
 	registry.logger.Debugln("LoadBalanceCall() - actionName: ", actionName, " target nodeID: ", actionEntry.TargetNodeID())
 
+	context.SetPayloadSchema(actionEntry.action.Params().RawMap())
 	if actionEntry.isLocal {
-		registry.broker.MiddlewareHandler("beforeLocalAction", context)
+		beforeLocalActionResult := registry.broker.MiddlewareHandler("beforeLocalAction", context)
+		if beforeLocalActionResult != nil {
+			_, isValidContext := beforeLocalActionResult.(nucleo.BrokerContext)
+			if !isValidContext {
+				resultChan := make(chan nucleo.Payload, 1)
+				resultChan <- payload.New(beforeLocalActionResult)
+				return resultChan
+			}
+
+		}
+
 		result := <-actionEntry.invokeLocalAction(context)
 		tempParams := registry.broker.MiddlewareHandler("afterLocalAction", middleware.AfterActionParams{context, result})
 		actionParams := tempParams.(middleware.AfterActionParams)
@@ -286,7 +297,16 @@ func (registry *ServiceRegistry) LoadBalanceCall(context nucleo.BrokerContext, o
 		return resultChan
 	}
 
-	registry.broker.MiddlewareHandler("beforeRemoteAction", context)
+	beforeRemoteActionResult := registry.broker.MiddlewareHandler("beforeRemoteAction", context)
+	if beforeRemoteActionResult != nil {
+		_, isValidContext := beforeRemoteActionResult.(nucleo.BrokerContext)
+		if !isValidContext {
+			resultChan := make(chan nucleo.Payload, 1)
+			resultChan <- payload.New(beforeRemoteActionResult)
+			return resultChan
+		}
+
+	}
 	result := <-registry.invokeRemoteAction(context, actionEntry)
 	tempParams := registry.broker.MiddlewareHandler("afterRemoteAction", middleware.AfterActionParams{context, result})
 	actionParams := tempParams.(middleware.AfterActionParams)
@@ -432,7 +452,8 @@ func (registry *ServiceRegistry) remoteNodeInfoReceived(message nucleo.Payload) 
 				serviceInfo["name"].(string),
 				newAction.Name(),
 				nil,
-				nucleo.ObjectSchema{nil})
+				payload.Empty(),
+			)
 			registry.actions.Add(serviceAction, svc, false)
 		}
 

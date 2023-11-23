@@ -142,17 +142,27 @@ func createNodeService(registry *ServiceRegistry) *service.Service {
 			{
 				Name:        "services",
 				Description: "Find and return a list of services in the registry of this service broker.",
-				Params: nucleo.ObjectSchema{
-					struct {
-						withActions   bool
-						withEndpoints bool
-						withEvents    bool `required:"true"`
-						skipInternal  bool
-						onlyAvailable bool
-						onlyLocal     bool
-						result        []map[string]interface{}
-					}{withActions: true},
-				},
+				// Params: nucleo.ObjectSchema{
+				// 	struct {
+				// 		withActions   bool
+				// 		withEndpoints bool
+				// 		withEvents    bool `required:"true"`
+				// 		skipInternal  bool
+				// 		onlyAvailable bool
+				// 		onlyLocal     bool
+				// 		result        []map[string]interface{}
+				// 	}{withActions: true},
+				// },
+				// @TODO: figure out how to make sure these are optional values
+				// Params: map[string]interface{}{
+				// 	"withActions":   "boolean",
+				// 	"withEndpoints": "boolean",
+				// 	"withEvents":    "required,boolean",
+				// 	"skipInternal":  "boolean",
+				// 	"onlyAvailable": "boolean",
+				// 	"onlyLocal":     "boolean",
+				// 	"result":        []map[string]interface{}{},
+				// },
 				Handler: func(context nucleo.Context, params nucleo.Payload) interface{} {
 					context.Logger().Debugln("$node.services params: ", params.Value())
 
