@@ -42,7 +42,7 @@ func main() {
 
 	additionResult := <-nucleoBroker.Call("calculator.add", map[string]interface{}{
 		"a": 1,
-		"b": 2,
+		"b": "dkjvbsduivf",
 	})
 
 	signalC := make(chan os.Signal)
