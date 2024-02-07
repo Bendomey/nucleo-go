@@ -26,8 +26,15 @@ var Calculator = nucleo.ServiceSchema{
 func main() {
 	nucleoBroker := broker.New(&nucleo.Config{
 		Namespace: "basic-example",
-		LogFormat: nucleo.LogFormatJSON,
-		LogLevel:  nucleo.LogLevelDebug,
+		LogFormat: nucleo.LogFormatText,
+		LogLevel:  nucleo.LogLevelInfo,
+		Cacher: nucleo.CacherConfig{
+			Type:               nucleo.CacherRedis,
+			Ttl:                30,
+			Monitor:            true,
+			Prefix:             "nucleo",
+			RedisConnectionUrl: "redis://localhost:6379",
+		},
 	})
 
 	// list all services here

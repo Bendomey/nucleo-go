@@ -7,6 +7,7 @@ import (
 
 	bus "github.com/Bendomey/nucleo-go/emitter"
 	"github.com/Bendomey/nucleo-go/utils"
+	"github.com/redis/go-redis/v9"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -151,11 +152,28 @@ const (
 	SerializerJSON SerializerType = "JSON"
 )
 
+type CacherType string
+
+const (
+	CacherMemory CacherType = "Memory"
+	CacherRedis  CacherType = "Redis"
+)
+
+type CacherConfig struct {
+	Type               CacherType
+	Prefix             string
+	Ttl                int
+	Monitor            bool
+	RedisConnectionUrl string
+	RedisConnection    redis.Options
+}
+
 type Config struct {
 	LogLevel                   LogLevelType
 	LogFormat                  LogFormatType
 	Serializer                 SerializerType
 	Validator                  ValidatorType
+	Cacher                     CacherConfig
 	DiscoverNodeID             func() string
 	Transporter                string
 	TransporterFactory         TransporterFactoryFunc

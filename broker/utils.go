@@ -34,6 +34,9 @@ func mergeConfigs(baseConfig nucleo.Config, userConfig []*nucleo.Config) nucleo.
 			if config.Validator != "" {
 				baseConfig.Validator = config.Validator
 			}
+
+			baseConfig.Cacher = config.Cacher
+
 			if config.TransporterFactory != nil {
 				baseConfig.TransporterFactory = config.TransporterFactory
 			}

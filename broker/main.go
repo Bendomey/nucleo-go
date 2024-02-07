@@ -30,7 +30,7 @@ type ServiceBroker struct {
 
 	middlewares *middleware.Dispatch
 
-	cache cache.Cache
+	cacher cache.Cacher
 
 	serializer *serializer.Serializer
 
@@ -366,6 +366,8 @@ func (broker *ServiceBroker) Stop() {
 		broker.stopService(service)
 	}
 
+	broker.cacher.Close()
+
 	broker.registry.Stop()
 
 	broker.started = false
@@ -495,6 +497,9 @@ func (broker *ServiceBroker) registerInternalMiddlewares() {
 	// Metrics
 	broker.middlewares.Add(metrics.Middlewares())
 
+	// Cacher
+	broker.middlewares.Add(broker.cacher.Middlewares())
+
 	// Validation
 	broker.middlewares.Add(broker.validator.Middlewares())
 }
@@ -503,6 +508,15 @@ func (broker *ServiceBroker) init() {
 	broker.id = broker.config.DiscoverNodeID()
 	broker.logger = broker.createBrokerLogger()
 	broker.setupLocalBus()
+
+	// cacher
+	cacher, cacherNotAvailable := cache.Resolve(broker.config)
+	if !cacherNotAvailable {
+		cacher.Init()
+
+		broker.cacher = cacher
+		broker.logger.Infoln("Cacher: ", cacher.GetCacherName())
+	}
 
 	// Validator
 	validator := validators.Resolve(broker.config)
